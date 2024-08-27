@@ -63,8 +63,8 @@ async function startBot() {
                     if (!guildSettings) {
                         const newSettings = new GuildSettings({
                             guildId: guild.id,
+                            name: guild.name,
                             allowedChannels: [],
-                            otherSettings: {},
                             levelupMessages: false,
                             levelupChannel: ''
                         });
@@ -121,8 +121,10 @@ async function startBot() {
                 if (!guildSettings) {
                     const newSettings = new GuildSettings({
                         guildId: guild.id,
+                        name: guild.name,
                         allowedChannels: [],
-                        users: [] 
+                        levelupMessages: false,
+                        levelupChannel: ''
                     });
                     await newSettings.save();
                     logger.debug(`Default settings saved for guild ${guild.name}`);
