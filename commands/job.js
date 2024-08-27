@@ -241,7 +241,7 @@ async function jobInfo(interaction) {
 async function listJob(interaction) {
     const pageLimit = 5;
     let page = 0;
-    const jobs = await Job.find({ enabled: true }).sort({ 'employees.length': -1 }).lean();
+    const jobs = await Job.find({ enabled: true }).sort({ levelRequired: 1 }).lean();
 
     function generateEmbed(start) {
         const current = jobs.slice(start, start + pageLimit);
