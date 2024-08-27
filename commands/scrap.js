@@ -1,0 +1,36 @@
+const Profile = require('../models/Profile');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { getLogger } = require('../utils/logging');
+const { giveCoins } = require('../utils/main');
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('scrap')
+        .setDescription('Sell unusable parts from your inventory.'),
+    category: 'Economy',
+    async execute(interaction) {
+    let logger = await getLogger();
+        const profile = await Profile.findOne({ userId: interaction.user.id });
+        if (!profile) {
+            await interaction.reply({ content: "You need to create a profile to scrap parts.", ephemeral: true });
+            return;
+        }
+        const scrapParts = profile.inventory.filter(item => item.condition !== "Usable");
+        if (scrapParts.length < 1) {
+            await interaction.reply({ content: "You don't have any parts to scrap.", ephemeral: true });
+            return;
+        }
+
+        try {
+            const scrapValue = scrapParts.reduce((acc, item) => acc + item.value, 0);
+
+            await giveCoins(profile, scrapValue, 'Scrapped parts');
+    
+            await interaction.reply({ content: `You scrapped your parts for ${scrapValue} <:coins:1269411594685644800>`, ephemeral: true });
+        } catch (error) {
+            logger.error(interaction.user.tag+' | scrap: '+error);
+            await interaction.reply({ content: "An error occurred while scrapping your parts.", ephemeral: true });
+        }
+        
+    }
+};
