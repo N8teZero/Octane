@@ -30,9 +30,9 @@ module.exports = {
         }
         
         const lootAggregate = allLoot.reduce((acc, item) => {
-            const key = `${item.partName} - ${item.condition}`;
+            const key = `${item.name} - ${item.condition}`;
             if (!acc[key]) {
-                acc[key] = { partName: item.partName, condition: item.condition, value: item.value, qty: 1 };
+                acc[key] = { name: item.name, condition: item.condition, value: item.value, qty: 1 };
             } else {
                 acc[key].value += item.value;
                 acc[key].qty += 1;
@@ -43,7 +43,7 @@ module.exports = {
         const finalLoot = Object.values(lootAggregate);
         //logger.debug(`Final Loot: ${JSON.stringify(finalLoot)}`);
         finalLoot.forEach(item => {
-            profile.inventory.push({ partName: item.partName, condition: item.condition, value: item.value });
+            profile.inventory.push({ name: item.name, condition: item.condition, value: item.value });
         });
 
         profile.junkyardPasses -= count;
@@ -63,7 +63,7 @@ module.exports = {
             
             finalLoot.forEach(item => {
                 embed.addFields({
-                    name: `${item.partName} - ${item.condition}`,
+                    name: `${item.name} - ${item.condition}`,
                     value: `Quantity: ${item.qty}\nValue: ${item.value.toLocaleString()} <:coins:1269411594685644800>`,
                     inline: true
                 });
@@ -95,7 +95,7 @@ async function generateLoot() {
         let condition = conditions.find((_, index) => conditionProbability.slice(0, index + 1).reduce((a, b) => a + b, 0) > conditionIndex);
         const value = calculatePartValue(part, condition);
 
-        loot.push({ partName: part, condition: condition, value: value });
+        loot.push({ name: part, condition: condition, value: value });
     }
     return loot;
 }

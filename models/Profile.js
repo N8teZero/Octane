@@ -1,7 +1,5 @@
-const { bold } = require('discord.js');
 const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
-const { getLogger } = require('../utils/logging');
 
 const upgradeSchema = new mongoose.Schema({
     type: String,
@@ -35,6 +33,14 @@ const challengeProgressSchema = new mongoose.Schema({
     progress: { type: Number, default: 0 },
     completed: { type: Boolean, default: false },
     lastCompleted: { type: Date }
+});
+
+const inventorySchema = new mongoose.Schema({
+    name: { type: String },
+    condition: { type: String }, // 'Worn', 'Broken', 'Damaged', 'Usable'
+    value: { type: Number, default: 0 },
+    category: { type: String },
+    quantity: { type: Number, default: 1 }
 });
 
 const profileSchema = new mongoose.Schema({
@@ -77,11 +83,7 @@ const profileSchema = new mongoose.Schema({
     junkyardPasses: { type: Number, default: 0 },
     junkyardVisits: { type: Number, default: 0 },
     lastJunkyardVisit: { type: Date },
-    inventory: [{
-        partName: { type: String },
-        condition: { type: String }, // 'Worn', 'Broken', 'Damaged', 'Usable'
-        value: { type: Number, default: 0 }
-    }],
+    inventory: [inventorySchema],
     booster: {
         xp: { type: Number, default: 1.0 },
         xpExpires: { type: Date },
@@ -107,7 +109,7 @@ profileSchema.statics.initializeProfile = async function(userId, guildId, userna
         try {
             await profile.save();
         } catch (error) {
-            logger.error(userId+' | initializeProfile: '+error);
+            console.error(userId+' | initializeProfile: '+error);
             throw error;
         }
     }

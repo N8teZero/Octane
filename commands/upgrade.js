@@ -19,7 +19,7 @@ module.exports = {
             return interaction.reply({ content: "You have no active vehicle to upgrade.", ephemeral: true });
         }
 
-        const item = profile.inventory.find(i => i.partName.toLowerCase() === itemToInstall.toLowerCase() && i.condition === 'Usable');
+        const item = profile.inventory.find(i => i.name.toLowerCase() === itemToInstall.toLowerCase() && i.condition === 'Usable');
 
         logger.debug(`Player: ${interaction.user.tag} | Vehicle: ${vehicle.make} ${vehicle.model} - Upgrades: ${itemToInstall} Item: ${item}`);
 

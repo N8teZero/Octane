@@ -16,13 +16,13 @@ module.exports = {
 
         try {
             const partsSummary = profile.inventory.reduce((acc, item) => {
-                if (!acc[item.partName]) {
-                    acc[item.partName] = {};
+                if (!acc[item.name]) {
+                    acc[item.name] = {};
                 }
-                if (!acc[item.partName][item.condition]) {
-                    acc[item.partName][item.condition] = 0;
+                if (!acc[item.name][item.condition]) {
+                    acc[item.name][item.condition] = 0;
                 }
-                acc[item.partName][item.condition]++;
+                acc[item.name][item.condition]++;
                 return acc;
             }, {});
     
