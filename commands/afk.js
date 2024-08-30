@@ -19,7 +19,8 @@ module.exports = {
 
         const lastClaimed = DateTime.fromJSDate(profile.lastAFKClaim || new Date());
         const now = DateTime.now().setZone('America/New_York');
-        const minutesSinceLastClaim = now.diff(lastClaimed, 'minutes').minutes;
+        let minutesSinceLastClaim = now.diff(lastClaimed, 'minutes').minutes;
+        if (minutesSinceLastClaim > 2880) minutesSinceLastClaim = 2880;  // -max 48 hours
         const rewardMultiplier = Math.floor(minutesSinceLastClaim / 5);
 
         if (rewardMultiplier < 1) {

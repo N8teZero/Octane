@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { Client, SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { DateTime } = require('luxon');
 const path = require('path');
 const Profile = require('../models/Profile');
@@ -11,6 +11,7 @@ module.exports = {
     .setDescription('View information about the bot and its developers.'),
     category: 'Misc',
     async execute(interaction, guildSettings, client) {
+        let logger = await getLogger();
         try {
             const botVersion = await getSetting('botVersion');
             const devID = await getSetting('devID');
@@ -19,7 +20,7 @@ module.exports = {
 
             const logoPath = path.join(__dirname, '..', 'assets', 'logo1.png');
             const attachment = new AttachmentBuilder(logoPath, { name: 'logo.png' });
-            const uptime = await getUptime();
+            const uptime = await getUptime(client);
             const profilesCount = await Profile.countDocuments();
             const commandCount = client.commands.size;
             
@@ -46,9 +47,9 @@ module.exports = {
     }
 };
 
-async function getUptime() {
+async function getUptime(client) {
     const now = DateTime.now().setZone('America/New_York');
-    const startupTime = await getSetting('startupTime');
+    const uptime = now.diff(DateTime.fromISO(client.startupTime));
     //return now.diff(startupTime, ['days', 'hours', 'minutes']).toObject();
-    return now.diff(startupTime).toFormat("hh 'hours', mm 'minutes'");
+    return `${uptime.days}d ${uptime.hours}h ${uptime.minutes}m`;
 }

@@ -23,10 +23,12 @@ module.exports = {
 
         try {
             const scrapValue = scrapParts.reduce((acc, item) => acc + item.value, 0);
+            profile.inventory = profile.inventory.filter(item => item.condition === "Usable");
+            await profile.save();
 
             await giveCoins(profile, scrapValue, 'Scrapped parts');
     
-            await interaction.reply({ content: `You scrapped your parts for ${scrapValue} <:coins:1269411594685644800>`, ephemeral: true });
+            await interaction.reply({ content: `Your unusable parts have been scrapped for ${scrapValue.toLocaleString()} <:coins:1269411594685644800>`, ephemeral: false });
         } catch (error) {
             logger.error(interaction.user.tag+' | scrap: '+error);
             await interaction.reply({ content: "An error occurred while scrapping your parts.", ephemeral: true });

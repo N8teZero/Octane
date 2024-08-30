@@ -1,85 +1,90 @@
-// commands/challenge.js
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const Profile = require('../models/Profile');
-const { calculateWorkReward, giveXP, giveCoins, passiveRefuel } = require('../utils/main');
-const { DateTime } = require('luxon');
 const Challenge = require('../models/Challenge');
 const { getLogger } = require('../utils/logging');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('challenges')
-        .setDescription('View daily challenge progress.'),
+        .setDescription('View challenge progress.'),
     category: 'Rewards',
     async execute(interaction) {
-    let logger = await getLogger();
-        const challenges = await Challenge.find({ daily: true }).sort({ name: 1 }).lean();
+        let logger = await getLogger();
+        const dailyChallenges = await Challenge.find({ category: 'daily' }).sort({ name: 1 }).lean();
+        const starterChallenges = await Challenge.find({ category: 'starter' }).sort({ name: 1 }).lean();
         let profile = await Profile.findOne({ userId: interaction.user.id });
+
         let page = 0;
-        const pageLimit = 5;
+        let currentCategory = 'Daily';
+        let challenges = dailyChallenges;  // Default to Daily challenges
 
-        function generateEmbed(start) {
-            try {
-                const currentChallenges = challenges.slice(start, start + pageLimit);
-                const embed = new EmbedBuilder()
-                    .setTitle('**Daily Challenges**')
-                    .setDescription('*Complete these challenges to earn rewards. Challenges reset and rewards granted at 05:00 UTC.*\n\n' +
-                        currentChallenges.map((ch, index) => {
-                        const challengeProgress = profile.challenges.find(chal => chal.challengeId.equals(ch._id));
-                        const progress = challengeProgress ? challengeProgress.progress : '0';
-                        const progressEmoji = challengeProgress && challengeProgress.progress >= ch.targetCount ? ':white_check_mark:' : ':hourglass:';
-                        return `**${index + 1}**. ${ch.name}: ${ch.description}\nRewards: ${ch.xpReward} XP, ${ch.coinReward} Coins\nProgress: ${progressEmoji} ${progress}/${ch.targetCount}`;
-                    }).join('\n\n'))
-                    .setFooter({ text: `Page ${page + 1} of ${Math.ceil(challenges.length / pageLimit)}` })
-                    .setColor(0x00AE86);
-    
-                return embed;
-            } catch (err) {
-                logger.error(interaction.user.tag+' | challenges: '+err);
-                return interaction.reply('An error occurred while generating the challenges list.', { ephemeral: true });
-            }
+        function generateEmbed(start, challenges) {
+            const currentChallenges = challenges.slice(start, start + 5);
+            return new EmbedBuilder()
+                .setTitle(`**${currentCategory} Challenges**`)
+                .setDescription(currentChallenges.map((ch, index) => {
+                    const challengeProgress = profile.challenges.find(chal => chal.challengeId.equals(ch._id));
+                    const progress = challengeProgress ? challengeProgress.progress : 0;
+                    const completed = challengeProgress && challengeProgress.progress >= ch.targetCount ? ':white_check_mark:' : ':hourglass:';
+                    return `**${index + 1}**. ${ch.name} (${completed} ${progress}/${ch.targetCount})\nRewards: ${ch.xpReward} XP, ${ch.coinReward} Coins\n${ch.description}`;
+                }).join('\n\n'))
+                .setFooter({ text: `Page ${page + 1} of ${Math.ceil(challenges.length / 5)}` })
+                .setColor(0x00AE86);
         }
 
-        const embed = generateEmbed(0);
-        const rows = [];
-        const buttons = [];
+        const embed = generateEmbed(0, challenges);
+        const row = new ActionRowBuilder();
 
-        if (challenges.length > pageLimit) {
-            buttons.push(new ButtonBuilder()
-                .setCustomId('previous')
-                .setLabel('Previous')
-                .setStyle(ButtonStyle.Secondary)
-                .setDisabled(page === 0));
-            buttons.push(new ButtonBuilder()
-                .setCustomId('next')
-                .setLabel('Next')
-                .setStyle(ButtonStyle.Secondary)
-                .setDisabled((page + 1) * pageLimit >= challenges.length));
+        row.addComponents(
+            new ButtonBuilder().setCustomId('previous').setLabel('Previous').setStyle(ButtonStyle.Secondary).setDisabled(true),
+            new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Secondary).setDisabled(challenges.length <= 5),
+            new ButtonBuilder().setCustomId('daily').setLabel('Daily').setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId('starter').setLabel('Starter').setStyle(ButtonStyle.Success)
+        );
+
+        const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+        const collector = message.createMessageComponentCollector({ time: 60000 });
+
+        function generateButtons(page, challenges) {
+            return new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('previous')
+                        .setLabel('Previous')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(page === 0),
+                    new ButtonBuilder()
+                        .setCustomId('next')
+                        .setLabel('Next')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled((page + 1) * 5 >= challenges.length),
+                    new ButtonBuilder()
+                        .setCustomId('daily')
+                        .setLabel('Daily')
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('starter')
+                        .setLabel('Starter')
+                        .setStyle(ButtonStyle.Success)
+                );
         }
 
-        if (buttons.length > 0) {
-            rows.push(new ActionRowBuilder().addComponents(buttons));
-        }
-
-        try {
-            const message = await interaction.reply({ embeds: [embed], components: rows, fetchReply: true });
-            const filter = i => i.user.id === interaction.user.id;
-            const collector = message.createMessageComponentCollector({ filter, time: 60000 });
-    
-            collector.on('collect', async i => {
-                if (i.customId === 'next' && page < Math.ceil(challenges.length / pageLimit) - 1) {
+        collector.on('collect', async i => {
+            if (['next', 'previous'].includes(i.customId)) {
+                if (i.customId === 'next' && (page + 1) * 5 < challenges.length) {
                     page++;
-                    await i.update({ embeds: [generateEmbed(page * pageLimit)], components: rows });
                 } else if (i.customId === 'previous' && page > 0) {
                     page--;
-                    await i.update({ embeds: [generateEmbed(page * pageLimit)], components: rows });
                 }
-            });
-    
-            collector.on('end', () => interaction.editReply({ components: [] }));
-        } catch (err) {
-            logger.error(interaction.user.tag+' | challenges: '+err);
-            return interaction.reply('An error occurred while generating the challenges list.', { ephemeral: true });
-        }
+                await i.update({ embeds: [generateEmbed(page * 5, challenges)], components: [generateButtons(page, challenges)] });
+            } else if (i.customId === 'daily' || i.customId === 'starter') {
+                currentCategory = i.customId.charAt(0).toUpperCase() + i.customId.slice(1);
+                challenges = i.customId === 'daily' ? dailyChallenges : starterChallenges;
+                page = 0;
+                await i.update({ embeds: [generateEmbed(0, challenges)], components: [generateButtons(page, challenges)] });
+            }
+        });
+
+        collector.on('end', () => interaction.editReply({ components: [] }));
     }
 };

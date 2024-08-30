@@ -52,11 +52,12 @@ async function startBot() {
         }
 
         client.once('ready', async () => {
-    
+            const startupTime = DateTime.now().setZone('America/New_York').toISO();
             const profilesCount = await Profile.countDocuments();
             logger.info(`${client.user.tag} connected | Guilds: ${client.guilds.cache.size} | Users: ${client.users.cache.size} | Profiles: ${profilesCount} | Commands: ${client.commands.size} | Bot Version: ${botVersion}`);
         
             client.user.setPresence({ activities: [{ name: 'Use /help to learn more' }], status: 'online' });
+            client.startupTime = startupTime;
             client.guilds.cache.forEach(async guild => {
                 try {
                     const guildSettings = await GuildSettings.findOne({ guildId: guild.id });
@@ -146,45 +147,65 @@ async function startBot() {
         });
         
         client.on('interactionCreate', async interaction => {
-            if (!interaction.isCommand() && !interaction.isMessageComponent()) return;
-        
             const guildSettings = await GuildSettings.findOne({ guildId: interaction.guild.id });
             const profile = await Profile.findOne({ userId: interaction.user.id });
-            const command = client.commands.get(interaction.commandName);
         
-            if (!command) return;
-            //logger.info(`Channel ID: ${interaction.channelId} | Allowed channels: ${guildSettings.allowedChannels}`);
-            if (guildSettings && !guildSettings.allowedChannels === 0 && !guildSettings.allowedChannels.includes(interaction.channelId)) {
-                return await interaction.reply({ content: 'This command is not allowed in this channel.', ephemeral: true });
-            }
+            if (interaction.isCommand()) {
+                const command = client.commands.get(interaction.commandName);
+                if (!command) return;
         
-            if (profile) {
-                profile.lastMessageDate = DateTime.now().setZone('America/New_York');
-                await profile.save();
+                if (guildSettings && guildSettings.allowedChannels.length > 0 && !guildSettings.allowedChannels.includes(interaction.channelId)) {
+                    return await interaction.reply({ content: 'This command is not allowed in this channel.', ephemeral: true });
+                }
+        
+                if (profile) {
+                    profile.lastMessageDate = DateTime.now().setZone('America/New_York');
+                    await profile.save();
+                    try {
+                        await updateBooster(profile);
+                        // await passiveRefuel(profile);
+                    } catch (error) {
+                        logger.error(interaction.user.tag + ' | ' + interaction.commandName + ': ' + error);
+                    }
+                }
+        
                 try {
-                    await updateBooster(profile);
-                    //await passiveRefuel(profile);
+                    if (interaction.user.id !== devID && (command === 'addjob' || command === 'addchallenge' || command === 'additem')) {
+                        return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+                    }
+                    await command.execute(interaction, guildSettings, client);
+                    logger.info(`[${interaction.guild.name}] - ${interaction.user.tag}: ${interaction.commandName}`);
                 } catch (error) {
-                    logger.error(interaction.user.tag+' | '+interaction.commandName+': '+error);
+                    logger.error(interaction.user.tag + ' | ' + interaction.commandName + ': ' + error);
+                    if (!interaction.replied) {
+                        await interaction.reply({ content: 'An error occurred while executing this command.', ephemeral: true });
+                    } else {
+                        await interaction.followUp({ content: 'An error occurred.', ephemeral: true });
+                    }
+                }
+            } else if (interaction.isButton()) {
+                if (interaction.customId === 'scrap_items') {
+                    try {
+                        const command = client.commands.get('scrap');
+                        logger.info(`[${interaction.guild.name}] - ${interaction.user.tag}: ${command.data.name}`);
+                        await command.execute(interaction, guildSettings, client);
+                    } catch (error) {
+                        await interaction.reply({ content: 'Failed to scrap items.', ephemeral: true });
+                        logger.error(interaction.user.tag + ' | scrap_items button: ' + error);
+                    }
+                } else if (interaction.customId === 'view_inventory') {
+                    try {
+                        const command = client.commands.get('inventory');
+                        logger.info(`[${interaction.guild.name}] - ${interaction.user.tag}: ${command.data.name}`);
+                        await command.execute(interaction, guildSettings, client);
+                    } catch (error) {
+                        await interaction.reply({ content: 'Failed to view inventory.', ephemeral: true });
+                        logger.error(interaction.user.tag + ' | view_inventory button: ' + error);
+                    }
                 }
             }
-        
-            try {
-                if (interaction.user.id !== devID && (command === 'addjob' || command === 'addchallenge' || command === 'additem')) {
-                    return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
-                }
-                await command.execute(interaction, guildSettings, client);
-                logger.info(`[${interaction.guild.name}] - ${interaction.user.tag}: ${interaction.commandName}`);
-            } catch (error) {
-                logger.error(interaction.user.tag+' | '+interaction.commandName+': '+error);
-                if (!interaction.replied) {
-                    await interaction.reply({ content: 'An error occurred while executing this command.', ephemeral: true });
-                } else {
-                    await interaction.followUp({ content: 'An error occurred.', ephemeral: true });
-                }
-            }
-        
         });
+        
         
         client.on('messageCreate', async message => {
             if (message.author.bot || !message.guild) return;

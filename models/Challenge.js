@@ -2,15 +2,17 @@ const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
 
 const challengeSchema = new mongoose.Schema({
-    name: String,
-    description: String,
-    xpReward: Number,
-    coinReward: Number,
-    targetType: String, // e.g., "racesCompleted", "profileChecks"
-    targetCount: Number,
-    daily: Boolean, // true if the challenge resets daily
-    creatorId: String,
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    xpReward: { type: Number, required: true },
+    coinReward: { type: Number, required: true },
+    targetType: { type: String, required: true },
+    targetCount: { type: Number, required: true },
+    daily: { type: Boolean, default: false },
+    category: { type: String, required: true },
+    creatorId: { type: String, required: true },
     createDate: { type: Date, default: () => DateTime.now().setZone('America/New_York').toJSDate() }
 });
 
-module.exports = mongoose.model('Challenge', challengeSchema);
+const Challenge = mongoose.model('Challenge', challengeSchema);
+module.exports = Challenge;

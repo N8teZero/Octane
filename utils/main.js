@@ -118,7 +118,7 @@ const passiveRefuel = async (profile) => {
 const rewardsTable = async (profile) => {
     let logger = await getLogger();
     try {
-        const levelInfo = await calculateLevel(profile);
+        const levelInfo = await calculateLevel(profile.xp);
         await updateBooster(profile);
         const prof = await Profile.findOne({ userId: profile.userId, guildId: profile.guildId });
 
@@ -236,47 +236,53 @@ async function updateChallenge(user, type) {
     let logger = await getLogger();
     const now = DateTime.now().setZone('America/New_York');
     const profile = await Profile.findOne({ userId: user.userId });
-    logger.debug(`Updating challenge for ${profile.username} | Type: ${type}`);
+
     if (!profile) {
-        logger.error(user.id+' | updateChallenge: Profile not found');
+        logger.error(user.id + ' | updateChallenges: Profile not found');
         return;
-    };
-    const challengeData = await Challenge.findOne({ targetType: type });
-    if (!challengeData) return;
+    }
+
+    // Fetch all challenges that match the targetType and are appropriate for the category.
+    const challenges = await Challenge.find({ targetType: type });
+
+    if (!challenges.length) return;
+
     try {
-        const challengeProgress = profile.challenges.find(ch => ch.challengeId.equals(challengeData._id));
-     
-        if (!challengeProgress) {
-            if (challengeData.targetCount === 1) {
-                profile.challenges.push({
-                    challengeId: challengeData._id,
-                    progress: 1,
-                    completed: true,
-                    lastCompleted: now.toJSDate()
-                });
+        // Loop through each challenge and update accordingly
+        challenges.forEach(async (challengeData) => {
+            const challengeProgress = profile.challenges.find(ch => ch.challengeId.equals(challengeData._id));
+
+            if (!challengeProgress) {
+                if (challengeData.targetCount === 1) {
+                    profile.challenges.push({
+                        challengeId: challengeData._id,
+                        progress: 1,
+                        completed: true,
+                        lastCompleted: now.toJSDate()
+                    });
+                } else {
+                    profile.challenges.push({
+                        challengeId: challengeData._id,
+                        progress: 1
+                    });
+                }
+            } else if (challengeProgress && challengeProgress.completed) {
+                return;
             } else {
-                profile.challenges.push({
-                    challengeId: challengeData._id,
-                    progress: 1
-                });
+                challengeProgress.progress++;
+                if (challengeProgress.progress >= challengeData.targetCount) {
+                    challengeProgress.completed = true;
+                    challengeProgress.lastCompleted = now.toJSDate();
+                }
             }
-        } else if (challengeProgress && challengeProgress.completed) {
-            //log.info('Challenge already completed');
-            return;
-        } else {
-            logger.debug(`Challenge progress: ${challengeProgress.progress}`);
-            challengeProgress.progress++;
-            if (challengeProgress.progress >= challengeData.targetCount) {
-                challengeProgress.completed = true;
-                challengeProgress.lastCompleted = now.toJSDate();
-            }
-        }
-        
+        });
+
         await profile.save();
     } catch (err) {
-        logger.error(user.id+' | updateChallenge: '+err);
+        logger.error(user.id + ' | updateChallenges: ' + err);
     }
 }
+
 
 // Vehicle upgrades
 const calculateStatBonuses = async (upgrades) => {

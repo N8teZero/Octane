@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonStyle, ButtonBuilder } = require('discord.js');
+
 const Profile = require('../models/Profile');
 const { DateTime } = require('luxon');
 const { giveXP, giveCoins, resetLuckyTokens } = require('../utils/main');
@@ -40,61 +41,89 @@ async function calculateLotteryReward() {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('lottery')
-        .setDescription('Spin the wheel to win prizes! Requires Lucky Tokens.')
-        .addIntegerOption(option => option.setName('count').setDescription('Number of tokens to use').setMinValue(1).setMaxValue(10).setRequired(false)),
+        .setDescription('Spin the wheel to win prizes! Requires Lucky Tokens.'),
     category: 'Rewards',
     async execute(interaction, guildSettings, client) {
+        let logger = await getLogger();
         let profile = await Profile.findOne({ userId: interaction.user.id });
         if (!profile) {
             return interaction.reply('You need a profile to participate in the lottery.', { ephemeral: true });
         }
-        profile = await resetLuckyTokens(profile);
-        const count = interaction.options.getInteger('count') || 1;
-        if (profile.luckyTokens < count) {
-            return interaction.reply(`You need ${count} Lucky Token(s) to play the lottery this many times.`, { ephemeral: true });
-        }
 
+
+        function generateEmbed(first, results) {
+            if (first) {
+                return new EmbedBuilder()
+                    .setTitle(`🎰 **Lottery** 🎰`)
+                    .setDescription(`<:lotterytoken:1269399775065804862> Lucky Tokens: ${profile.luckyTokens}\n\nUse the buttons below to draw with 1, 5, or 10 tokens.`)
+                    .setColor(0x00AE86);
+            }            
+            return new EmbedBuilder()
+                .setTitle(`🎰 **Lottery Results** 🎰`)
+                .setDescription(`<:lotterytoken:1269399775065804862> Lucky Tokens: ${profile.luckyTokens}\n\n**Rewards:**\n`+results.join('\n'))
+                .setFooter({ text: `You have played the lottery ${profile.lotteryCount} times.` })
+                .setColor(0x00AE86);
+        }
+    
+        const embed = generateEmbed(true);
+        const row = new ActionRowBuilder();
+
+        row.addComponents(
+            new ButtonBuilder().setCustomId('one').setLabel('One').setStyle(ButtonStyle.Secondary).setDisabled(false),
+            new ButtonBuilder().setCustomId('five').setLabel('Five').setStyle(ButtonStyle.Secondary).setDisabled(profile.luckyTokens < 5),
+            new ButtonBuilder().setCustomId('ten').setLabel('Ten').setStyle(ButtonStyle.Primary).setDisabled(profile.luckyTokens < 10)
+        );
+
+        const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+        const collector = message.createMessageComponentCollector({ time: 60000 });
         let results = [];
-        for (let i = 0; i < count; i++) {
-            const prize = await calculateLotteryReward();
-            if (!prize) {
-                logger.error(interaction.user.tag+' | lottery: No prize could be calculated.');
-                continue;
+
+        collector.on('collect', async i => {
+            if (i.customId === 'one') {
+                results = await drawLottery(profile, 1, i, client);
+            } else if (i.customId === 'five') {
+                results = await drawLottery(profile, 5, i, client);
+            } else if (i.customId === 'ten') {
+                results = await drawLottery(profile, 10, i, client);
             }
 
-            if(prize.reward.type === 'coin') {
-                await giveCoins(profile, prize.reward.value, 'Lottery rewards');
-            }
-            if(prize.reward.type === 'xp') {
-                await giveXP(profile, interaction.guildId, prize.reward.value, client, 'Lottery rewards'); 
-            }
-
-            results.push(`${prize.emoji} ${prize.reward.value} ${prize.description}`);
-        }
-
-        profile.luckyTokens -= count;
-        profile.lastLotteryPlay = DateTime.now().setZone('America/New_York').toJSDate();
-        profile.lotteryCount = (profile.lotteryCount || 0) + count;
-        await profile.save();
-
-        await interaction.reply({
-            content: '🎰 Spinning the wheel...'
-            //, ephemeral: true
-        });
-
-        setTimeout(async () => {
             try {
-                const embed = new EmbedBuilder()
-                    .setTitle('🎰 Lottery Results 🎰')
-                    .setDescription(`<:lotterytoken:1269399775065804862> ${profile.luckyTokens} Lucky Tokens remaining.\n**Rewards:**\n`+results.join('\n'))
-                    .setColor('#FFFF00')
-                    .setFooter({ text: `You have played the lottery ${profile.lotteryCount} times.` });
-            
-            
-                await interaction.editReply({ embeds: [embed] });
+                await i.update({ content: '🎰 Spinning...', embeds: [], components: [] });
+                setTimeout(async () => {
+                    await i.editReply({ content: '', embeds: [generateEmbed(false, results)], components: [] });
+                }, 3000);
             } catch (error) {
                 logger.error(interaction.user.tag+' | lottery: '+error);
             }
-        }, 3000);
+        });
+
     }
 };
+
+async function drawLottery(profile, count, interaction, client) {
+    let logger = await getLogger();
+    let results = [];
+    for (let i = 0; i < count; i++) {
+        const prize = await calculateLotteryReward();
+        if (!prize) {
+            logger.error(interaction.user.tag+' | lottery: No prize could be calculated.');
+            continue;
+        }
+
+        if(prize.reward.type === 'coin') {
+            await giveCoins(profile, prize.reward.value, 'Lottery rewards');
+        }
+        if(prize.reward.type === 'xp') {
+            await giveXP(profile, interaction.guildId, prize.reward.value, client, 'Lottery rewards'); 
+        }
+
+        results.push(`${prize.emoji} ${prize.reward.value} ${prize.description}`);
+    }
+
+    profile.luckyTokens -= count;
+    profile.lastLotteryPlay = DateTime.now().setZone('America/New_York').toJSDate();
+    profile.lotteryCount = (profile.lotteryCount || 0) + count;
+    await profile.save();
+
+    return results;
+}

@@ -42,6 +42,29 @@ As you level up, you will be able to purchase better cars, upgrades, and challen
 Keeps track of the top racers and displays the leaderboard.
 
 ## Patch Notes
+## 2024-08-29 - 2.28.0
+### What didn't I touch?
+* Added /top command to see top guilds based on various stats. This will be expanded on more with a coming update
+* Removed /boosters command as it's fully covered in the /store command now
+* Removed dev commands that were used for adding jobs and challenges, no longer needed
+* Bug Fix - Scrap command was not removing the items correctly, and has been fixed
+* Bug Fix - Fixed the uptime display on the info command, it was showing undefined due to mismatched types
+* AFK - Added a maximum afk payout of 48 hours. May adjust this as needed
+* Challenges - Added categories to challenges so that we can have Starter challenges in addition to the existing Daily challenges, more to come
+* Challenges - Refactored so that doing challenges will complete across multiple categories. For example, opening your profile will complete both the starter and daily challenge. Daily challenges are reset each day
+* Cooldowns - Added a Refresh button to the cooldowns command so that it can be reused. Needs testing as buttons will timeout
+* Inventory - Added a Scrap button to the inventory command so players can quickly scrap the unusable car parts for coins. (XP coming soon)
+* Junkyard - Added a View Inventory button to the junkyard command so that players can quickly see all findings
+* Lottery - Overhauled the command to allow players to use up to 10 tokens at once, and improved the UI
+* Jobs - Added new jobs to the market to choose from, with varying pay and level requirements
+* Jobs - Adjusted Job List so that it sorts by level requirement
+* Jobs - Added positions to the jobs that will be unlocked through using the /work command and getting job xp. I'll be expanding on this so that players can become job managers and owners
+* Leaderboard - Added buttons to change between Guild and Global leaderboards. This removes the need to repeat the command for both views
+* Shop - Changes the command name for the Car Shop to /dealer. But typing /shop should still autopopulate to /dealer
+* Many more small things that I should have documented :nodders: I also created a dev web panel for managing items, challenges, jobs, and more!
+* Last but not least, I am working on a large update that will be releasing over the next few weeks that contains new items, player bonuses, and new ways to interact as a guild
+* Actually last thing, something to note: I have found that when I push command updates, the commands become available for up to an hour. I will try not to push those updates often anymore, but if you experience consistent failed interactions from the bot, this is likely the cause and should resolve shortly
+
 ## 2024-08-19 - 2.24.4
 ### Minor patches
 * Refactored /refuel command to have 30minute cooldown

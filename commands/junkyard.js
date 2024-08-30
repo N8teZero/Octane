@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ActionRowBuilder, AttachmentBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, AttachmentBuilder } = require('discord.js');
 const Profile = require('../models/Profile');
 const { DateTime } = require('luxon');
 const { getLogger } = require('../utils/logging');
@@ -69,17 +69,17 @@ module.exports = {
                 });
             });
 
-            await interaction.reply({ embeds: [embed] });
+            const components = [
+                new ActionRowBuilder()
+                    .addComponents(new ButtonBuilder().setCustomId('view_inventory').setLabel('View Inventory').setStyle(ButtonStyle.Primary))
+            ];
+    
+            await interaction.reply({ embeds: [embed], components: components });
         } catch (error) {
             logger.error(interaction.user.tag+' | junkyard: '+error);
             await interaction.reply({ content: "An error occurred while visiting the junkyard.", ephemeral: true });
         }
-        //const components = [
-        //    new ActionRowBuilder()
-        //        .addComponents(new ButtonBuilder().setCustomId('scrap').setLabel('Scrap All').setStyle(ButtonStyle.Danger))
-        //];
-
-        //await interaction.reply({ embeds: [embed], components: components });
+        
     }
 };
 

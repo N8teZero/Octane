@@ -8,7 +8,7 @@ module.exports = {
         .setDescription('Displays your inventory.'),
     category: 'General',
     async execute(interaction) {
-    let logger = await getLogger();
+        let logger = await getLogger();
         const profile = await Profile.findOne({ userId: interaction.user.id });
         if (!profile) {
             return interaction.reply({ content: "Profile not found.", ephemeral: true });
@@ -42,7 +42,31 @@ module.exports = {
                 embed.addFields({ name: part, value: description, inline: true });
             });
     
-            await interaction.reply({ embeds: [embed] });
+            // Add a button to scrap items
+            const scrappableParts = profile.inventory.filter(item => item.condition !== 'Usable');
+            const rows = [];
+            const buttons = [];
+    
+            if (scrappableParts.length > 0) {
+                buttons.push(new ButtonBuilder()
+                    .setCustomId('scrap_items')
+                    .setLabel('Scrap Items')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('♻️')
+                );
+            }
+    
+            if (buttons.length > 0) {
+                rows.push(new ActionRowBuilder().addComponents(buttons));
+            }
+
+            try {
+                await interaction.reply({ embeds: [embed], components: rows, fetchReply: true });
+                
+            } catch (error) {
+                logger.error(interaction.user.tag+' | inventory: '+error);
+                await interaction.reply('An error occurred while generating the inventory embed.', { ephemeral: true });
+            }
         } catch (error) {
             logger.error(interaction.user.tag+' | inventory: '+error);
             await interaction.reply('An error occurred while generating the inventory embed.', { ephemeral: true });

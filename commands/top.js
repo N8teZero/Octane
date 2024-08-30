@@ -17,7 +17,6 @@ module.exports = {
     async execute(interaction) {
         const metric = interaction.options.getString('metric');
 
-        // Aggregate data from profiles grouped by guild ID
         const guildStats = await Profile.aggregate([
             { $group: {
                 _id: "$guildId",
@@ -26,10 +25,9 @@ module.exports = {
                 count: { $sum: 1 }
             }},
             { $sort: { [`total${metric.charAt(0).toUpperCase() + metric.slice(1)}`]: -1 }},
-            { $limit: 10 } // Adjust the limit as needed
+            { $limit: 10 }
         ]);
 
-        // Fetch guild names based on IDs collected
         const guildIds = guildStats.map(stats => stats._id);
         const guilds = await GuildSettings.find({ guildId: { $in: guildIds }});
 
@@ -37,7 +35,6 @@ module.exports = {
             .setTitle(`Top Guilds by ${metric.charAt(0).toUpperCase() + metric.slice(1)}`)
             .setColor(0x00AE86);
 
-        // Build the description for the embed
         guildStats.forEach((stats, index) => {
             const guildName = guilds.find(g => g.guildId === stats._id)?.name || 'Unknown Guild';
             embed.addFields({

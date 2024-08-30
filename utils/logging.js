@@ -50,6 +50,7 @@ class WebhookTransport extends Transport {
 async function setupLogger() {
     const errorWebhookURL = await getSetting('errorWebhookURL');
     const generalWebhookURL = await getSetting('generalWebhookURL');
+    const debugEnabled = await getSetting('debugLoggingEnabled');
 
     if (!errorWebhookURL || !generalWebhookURL) {
         console.error('Webhook URLs are undefined. Please check your settings.');
@@ -57,19 +58,20 @@ async function setupLogger() {
     }
 
     const logger = createLogger({
-        level: 'info',
+        level: 'debug',
         format: format.combine(
             format.timestamp(),
-            format.json()
+            format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
         ),
         transports: [
             new transports.Console(),
-            new WebhookTransport({
-                errorWebhookURL: errorWebhookURL,
-                generalWebhookURL: generalWebhookURL
-            })
+            new WebhookTransport({ errorWebhookURL, generalWebhookURL })
         ]
     });
+
+    if (!debugEnabled) {
+        logger.transports[0].level = 'info';
+    }
 
     return logger;
 }
