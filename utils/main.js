@@ -13,16 +13,36 @@ async function calculateLevel(xp) {
     let level = 0;
     let totalXp = 0;
     let xpForNextLevel = 1200; // Initial XP needed for the first level
-    let levelOffset = 50
-    let levelMultiplier = 10
+    let levelOffset = 50;
+    let levelMultiplier = 10;
+    let maxLevel = 20;
 
-    while (totalXp <= xp) {
+    if (xp < 0) {
+        logger.warn(`Invalid XP value: ${xp}`);
+        xp = 0;
+    }
+
+    if (xp === 0) {
+        return {
+            level: 0,
+            currentLevelXp: 0,
+            remainingXp: 1200,
+            nextLevelXp: 1200,
+            progress: 0
+        };
+    }
+
+    while (totalXp <= xp && level < maxLevel) {
         level++;
         totalXp += xpForNextLevel;
         if (totalXp > xp) {
             break;
         }
         xpForNextLevel += Math.floor((levelOffset + level) * levelMultiplier);
+    }
+
+    if (level >= maxLevel) {
+        xpForNextLevel = 0;
     }
 
     let currentLevelXp = totalXp - xpForNextLevel;
