@@ -86,7 +86,7 @@ module.exports = {
 async function generateLoot() {
     const parts = ["Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes"];
     const conditions = ["Worn", "Broken", "Damaged", "Usable"];
-    const conditionProbability = [0.5, 0.3, 0.2, 0.001];
+    const conditionProbability = [0.5, 0.3, 0.2, 0.01];
 
     let loot = [];
     for (let i = 0; i < 5; i++) {

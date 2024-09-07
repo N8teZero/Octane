@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { DateTime } = require('luxon');
 const Profile = require('../models/Profile');
-const { giveXP, giveCoins, updateChallenge, generateVehiclestats } = require('../utils/main');
+const { giveXP, giveCoins, giveItem, updateChallenge, generateVehiclestats } = require('../utils/main');
 const { aiRaces } = require('../data/vehicles');
 const { getLogger } = require('../utils/logging');
 const { updateBooster } = require('../utils/main');
@@ -82,6 +82,10 @@ module.exports = {
                     if (result) {                     
                         await giveCoins(profile, coinsEarned, 'Race rewards');
                         await giveXP(profile, interaction.guildId, xpEarned, client, 'Race rewards');
+                        if (Math.random() < 0.3) {
+                            await giveItem(profile, 'junkyard_pass', 1, 'Rare Race Reward');
+                            rewardsMessage += '\n\nYou found a Junkyard Pass!';
+                        }
                         profile.streetRaceCount += 1;
                         profile.streetRaceStats.wins += 1;
                         profile.streetRaceStats.lastRaceDate = DateTime.now().setZone('America/New_York').toJSDate();

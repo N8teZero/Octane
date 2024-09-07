@@ -75,7 +75,7 @@ async function giveXP(profile, guild, xp, client, source) {
 
     profile.level = postLevel;
     await profile.save();
-    logger.debug(`${profile.username} earned ${xp} XP with ${xpBooster} booster from ${source}`);
+    logger.debug(`${profile.username} earned ${xp} XP with ${xpBooster}x booster from ${source}`);
     //log.info(`Level: ${preLevel} => ${postLevel}`);
     if (postLevel > preLevel) {
         logger.debug(`${profile.username} leveled up to ${postLevel}!!`);
@@ -103,7 +103,30 @@ async function giveCoins(profile, coins, source) {
     profile.coins += coins;
     await profile.save();
 
-    logger.debug(`${profile.username} earned ${coins} coins with ${coinsBooster} booster from ${source}`);
+    logger.debug(`${profile.username} earned ${coins} coins with ${coinsBooster}x booster from ${source}`);
+}
+
+async function giveItem(profile, item, quantity, source) {
+    let logger = await getLogger();
+    const itemData = await Item.findOne({ itemId: item });
+    if (!itemData) return;
+
+    if (itemData.itemId === 'junkyard_pass') {
+        profile.junkyardPasses += quantity;
+    } else if (itemData.itemId === 'lottery_ticket') {
+        profile.luckyTokens += quantity;
+    } else if (itemData.itemId === 'booster_xp') {
+        profile.booster.xp = 2.0;
+        profile.booster.xpExpires = DateTime.now().plus({ hours: 1 }).toJSDate();
+    } else if (itemData.itemId === 'booster_coins') {
+        profile.booster.coins = 2.0;
+        profile.booster.coinsExpires = DateTime.now().plus({ hours: 1 }).toJSDate();
+    } else {
+        return false;
+    }
+
+    logger.debug(`${profile.username} earned ${quantity} ${itemData.name} from ${source}`);
+    await profile.save();
 }
 
 const passiveRefuel = async (profile) => {
@@ -465,6 +488,7 @@ module.exports = {
     calculateLevel,
     giveXP,
     giveCoins,
+    giveItem,
     calculatePlayerScore,
     // Reward functions
     rewardsTable,
