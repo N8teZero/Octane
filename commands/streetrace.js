@@ -1,11 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
 const { DateTime } = require('luxon');
 const Profile = require('../models/Profile');
 const { giveXP, giveCoins, giveItem, updateChallenge, generateVehiclestats } = require('../utils/main');
 const { aiRaces } = require('../data/vehicles');
 const { getLogger } = require('../utils/logging');
 const { updateBooster } = require('../utils/main');
-
+const sharp = require('sharp');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,7 +22,7 @@ module.exports = {
         const logger = await getLogger();
         if (aiVehicles.length === 0) {
             await logger.warn(`race: ${profile.username} No AI vehicles`);
-            await interaction.update({
+            await interaction.reply({
                 content: "There are currently no races available, check back later.",
                 embeds: [],
                 components: []
@@ -42,6 +42,12 @@ module.exports = {
 
         const aiVehicleCurrent = aiVehicles.find(v => v.level === profile.streetRaceStats.highestLevelUnlocked);
         const aiVehicleNext = aiVehicles.find(v => v.level === profile.streetRaceStats.highestLevelUnlocked + 1) || aiVehicleCurrent;
+        const resizedBuffer = await sharp(playerVehicle.image)
+            .resize(128, 128)
+            .toBuffer();
+
+        const attachment = new AttachmentBuilder(resizedBuffer, { name: 'vehicle.png' });
+
         const embed = new EmbedBuilder()
             .setTitle('Street Race Challenge')
             .setDescription('Choose your race level. Racing will consume 25% of fuel\nYou can use `/refuel` to get more')
@@ -50,6 +56,7 @@ module.exports = {
                 { name: 'Next Level - ' + aiVehicleNext.level, value: `${aiVehicleNext.make} ${aiVehicleNext.model}`, inline: true },
                 { name: 'Your Vehicle', value: `${playerVehicle.make} ${playerVehicle.model}`, inline: false }
             )
+            .setImage('attachment://vehicle.png')
             .setFooter({ text: `${playerVehicle.stats.currentFuel}% of fuel remaining.` });
 
         const row = new ActionRowBuilder()
@@ -64,7 +71,7 @@ module.exports = {
                     .setStyle(ButtonStyle.Success),
             );
 
-        await interaction.reply({ embeds: [embed], components: [row] });
+        await interaction.reply({ embeds: [embed], components: [row], files: [attachment] });
 
         const collector = interaction.channel.createMessageComponentCollector({ time: 60000 });
         collector.on('collect', async i => {
@@ -118,7 +125,7 @@ module.exports = {
                             .addComponents(new ButtonBuilder().setCustomId('race_menu').setLabel('Race Again').setStyle(ButtonStyle.Primary))
                     ];
             
-                    await i.editReply({ content: null, embeds: [embed], components: components });
+                    await i.editReply({ content: null, embeds: [embed], components: components, files: [] });
                 }, 1000);
                 //logger.debug(interaction.guildId + ' - ' + xpEarned)
                 collector.stop();

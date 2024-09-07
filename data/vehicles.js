@@ -1,7 +1,7 @@
 const starterVehicles = [
     { id: 0, year: 2010, make: 'Ford',   model: 'Fiesta',  stats: { speed: 50, acceleration: 50, handling: 40, fuelCapacity: 100, currentFuel: 100 }, image: './assets/placeholder.png' },
     { id: 1, year: 2011, make: 'Toyota', model: 'Corolla', stats: { speed: 60, acceleration: 40, handling: 50, fuelCapacity: 100, currentFuel: 100 }, image: './assets/placeholder.png' },
-    { id: 2, year: 2009, make: 'Honda',  model: 'Civic',   stats: { speed: 55, acceleration: 45, handling: 45, fuelCapacity: 100, currentFuel: 100 }, image: 'https://cdn.discordapp.com/attachments/1273483771550634055/1281881187295432764/Honda_Civic_1280px.png?ex=66dd5463&is=66dc02e3&hm=d9255a43c2cdf2ae04de88c980a78e9342a8dd1dfd75a7d7e9b3bc82a1ed3155&' }
+    { id: 2, year: 2009, make: 'Honda',  model: 'Civic',   stats: { speed: 55, acceleration: 45, handling: 45, fuelCapacity: 100, currentFuel: 100 }, image: './assets/civic1.png' }
     
 ];
 
