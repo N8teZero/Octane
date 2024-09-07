@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
 const Profile = require('../models/Profile');
 const { generateVehiclestats } = require('../utils/main');
 const { getLogger } = require('../utils/logging');
@@ -22,9 +22,10 @@ module.exports = {
             .setDescription('Here are your vehicles and their stats:');
 
         for (const vehicle of vehicles) {
+            const vehicleImage = new AttachmentBuilder(vehicle.image, { name: 'vehicle.png' });
             const vehicleStats = await generateVehiclestats(vehicle);
             const statsText = `${vehicleStats.speedText}\n${vehicleStats.accelerationText}\n${vehicleStats.handlingText}\n\n${vehicle.stats.currentFuel.toLocaleString()}% Fuel`;
-    
+            embed.setImage('attachment://vehicle.png')
             embed.addFields({
                 name: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
                 value: statsText,
