@@ -121,8 +121,8 @@ module.exports = {
 
 const calculateWorkReward = async (profile, jobData, positionData) => {
     const basePay = jobData.CoinsPerMin * positionData.payMultiplier || 5;
-    const minCoins = basePay * 5;
-    const maxCoins = basePay * 10;
+    const minCoins = basePay * 20;
+    const maxCoins = basePay * 50;
     const coinsBooster = profile.booster.coins || 1.0;
     const coinsEarned = Math.floor(Math.random() * (maxCoins - minCoins + 1) + minCoins) * coinsBooster;
     

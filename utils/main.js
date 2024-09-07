@@ -324,11 +324,15 @@ const generateVehiclestats = async (vehicle) => {
     const accelerationText = `A: ${vehicle.stats.acceleration} (+${accelerationBonus})`;
     const handlingText = `H: ${vehicle.stats.handling} (+${handlingBonus})`;
 
-    const totalPower = vehicle.stats.speed + vehicle.stats.acceleration + vehicle.stats.handling + speedBonus + accelerationBonus + handlingBonus;
+    const speed = vehicle.stats.speed + speedBonus;
+    const acceleration = vehicle.stats.acceleration + accelerationBonus;
+    const handling = vehicle.stats.handling + handlingBonus;
+
+    const totalPower = speed + acceleration + handling;
 
     logger.debug(`Vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model} | S: ${totalPower} | A: ${accelerationBonus} | H: ${handlingBonus}`);
 
-    return { totalPower, speedText, accelerationText, handlingText };
+    return { totalPower, speedText, accelerationText, handlingText, speed, acceleration, handling };
 }
 
 // partBonuses

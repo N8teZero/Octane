@@ -21,7 +21,7 @@ module.exports = {
     category: 'Economy',
     async execute(interaction) {
         const logger = await getLogger();
-        const item = interaction.options.getString('item').toLowerCase();
+        let item = interaction.options.getString('item').toLowerCase();
         let quantity = interaction.options.getInteger('quantity') || 1;
         
         const profile = await Profile.findOne({ userId: interaction.user.id });

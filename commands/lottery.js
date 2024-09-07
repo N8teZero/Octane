@@ -50,6 +50,9 @@ module.exports = {
             return interaction.reply('You need a profile to participate in the lottery.', { ephemeral: true });
         }
 
+        if (!profile.luckyTokens || profile.luckyTokens < 1) {
+            return interaction.reply('You do not have any Lucky Tokens to play the lottery.', { ephemeral: true });
+        }
 
         function generateEmbed(first, results) {
             if (first) {

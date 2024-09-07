@@ -124,25 +124,18 @@ module.exports = {
 };
 
 async function simulateRace(profile, aiVehicle, playerVehicle) {
-    const odds = await calculateOdds(profile, aiVehicle.stats, playerVehicle);
+    const vehicleStats = await generateVehiclestats(playerVehicle);
+    const aiStats = await generateVehiclestats(aiVehicle);
+
+    const playerTotal = vehicleStats.totalPower + (profile.level * 2);
+    const aiTotal = aiStats.totalPower;
+
+    const odds = playerTotal / (playerTotal + aiTotal);
     const rng = Math.random();
     const result = rng < odds;
+
     //logger.debug(`Odds: ${odds}, RNG: ${rng}, Result: ${result}`);
     return result;   
-}
-
-async function calculateOdds(profile, aiStats, playerVehicle) {
-    //logger.debug(`Player Level: ${profile.xp} => ${playerData.level}`);
-
-    const statBonuses = await calculateStatBonuses(playerVehicle.upgrades);
-    const speedBonus = playerVehicle.stats.speed + statBonuses.speedBonus;
-    const accelerationBonus = playerVehicle.stats.acceleration + statBonuses.accelerationBonus;
-    const handlingBonus = playerVehicle.stats.handling + statBonuses.handlingBonus;
-
-    const playerTotal = speedBonus + accelerationBonus + handlingBonus + (profile.level * 2);
-    const aiTotal = aiStats.speed + aiStats.acceleration + aiStats.handling;
-    //logger.debug(`Player Total: ${playerTotal}, AI Total: ${aiTotal}`);
-    return playerTotal / (playerTotal + aiTotal);
 }
 
 const calculateStreetRacingReward = async (profile, aiLevel) => {

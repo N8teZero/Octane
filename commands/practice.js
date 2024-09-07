@@ -68,13 +68,3 @@ module.exports = {
         }
     }
 };
-
-async function practiceRace(playerVehicle, opponentVehicle) {
-    const playerStats = await generateVehiclestats(playerVehicle);
-    const opponentStats = await generateVehiclestats(opponentVehicle);
-    
-    const playerPower = playerStats.totalPower;
-    const opponentPower = opponentStats.totalPower;
-
-    return playerPower >= opponentPower;
-}
