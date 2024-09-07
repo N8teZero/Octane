@@ -30,6 +30,9 @@ module.exports = {
         const existingUpgrade = vehicle.upgrades.find(u => u.type === itemToInstall);
         const bonuses = partBonuses[itemToInstall.toLowerCase()];
         if (existingUpgrade) {
+            if (existingUpgrade.level >= 5) {
+                return interaction.reply({ content: "This upgrade is already at the max level for this vehicle.", ephemeral: true });
+            }
             existingUpgrade.level += 1;
             existingUpgrade.stats.speed += bonuses.speed;
             existingUpgrade.stats.acceleration += bonuses.acceleration;
