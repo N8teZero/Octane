@@ -391,6 +391,7 @@ async function getItemDetails(item, quantity) {
     const itemData = await Item.findOne({ itemId: item });
     if (!itemData) return null;
 
+
     if (isNaN(itemData.value) || typeof itemData.value !== 'number') {
         logger.error(`Invalid item value for ${item}: ${itemData.value}`);
         return null;
@@ -399,7 +400,7 @@ async function getItemDetails(item, quantity) {
     return {
         itemId: itemData.itemId,
         name: itemData.name,
-        totalCost: itemData.value * quantity,
+        totalCost: itemData.value * (quantity || 1),
         currency: itemData.currency, // 'coins' or 'CrewTokens'
         type: itemData.type,
         enabled: itemData.enabled
