@@ -77,6 +77,7 @@ module.exports = {
 
                 await i.editReply({
                     content: `Refueling complete! Your vehicle is now fully fueled.`,
+                    embeds: [],
                     components: []
                 });
             }, 5000);
