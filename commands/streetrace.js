@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { DateTime } = require('luxon');
 const Profile = require('../models/Profile');
-const { giveXP, giveCoins, updateChallenge, calculateStatBonuses } = require('../utils/main');
+const { giveXP, giveCoins, updateChallenge, generateVehiclestats } = require('../utils/main');
 const { aiRaces } = require('../data/vehicles');
 const { getLogger } = require('../utils/logging');
 const { updateBooster } = require('../utils/main');
@@ -100,18 +100,21 @@ module.exports = {
                         await profile.save();
                     }
                     
-                    await i.editReply({
-                        content: null,
-                        components: [],
-                        embeds: [new EmbedBuilder()
+                    const embed = new EmbedBuilder()
                         .setTitle(':checkered_flag: Race Result: ' + (result ? '🏆 You won the race!' : '😞 You lost the race.'))
                         .setDescription(result ? 'Congratulations on your victory!' : 'Better luck next time!')
                         .addFields([{ name: 'Rewards', value: rewardsMessage }])
                         .addFields([{ name: 'Race Stats', value: `${profile.streetRaceStats.wins}W / ${profile.streetRaceStats.losses}L` }])
                         .setColor(result ? '#00FF00' : '#FF0000')
-                        .setFooter({ text: `Race consumed 25% of fuel, ${playerVehicle.stats.currentFuel.toLocaleString()}% remaining.` })]
-                    }).catch(console.error);
+                        .setFooter({ text: `Race consumed 25% of fuel, ${playerVehicle.stats.currentFuel.toLocaleString()}% remaining.` });
+                
 
+                    const components = [
+                        new ActionRowBuilder()
+                            .addComponents(new ButtonBuilder().setCustomId('race_menu').setLabel('Race Again').setStyle(ButtonStyle.Primary))
+                    ];
+            
+                    await i.editReply({ content: null, embeds: [embed], components: components });
                 }, 1000);
                 //logger.debug(interaction.guildId + ' - ' + xpEarned)
                 collector.stop();

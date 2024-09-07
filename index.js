@@ -202,6 +202,15 @@ async function startBot() {
                         await interaction.reply({ content: 'Failed to view inventory.', ephemeral: true });
                         logger.error(interaction.user.tag + ' | view_inventory button: ' + error);
                     }
+                } else if (interaction.customId === 'race_menu') {
+                    try {
+                        const command = client.commands.get('race');
+                        logger.info(`[${interaction.guild.name}] - ${interaction.user.tag}: ${command.data.name}`);
+                        await command.execute(interaction, guildSettings, client);
+                    } catch (error) {
+                        await interaction.reply({ content: 'Failed to start streetrace.', ephemeral: true });
+                        logger.error(interaction.user.tag + ' | race_menu: ' + error);
+                    }
                 }
             }
         });

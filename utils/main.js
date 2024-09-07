@@ -305,8 +305,10 @@ async function updateChallenge(user, type) {
 
 
 // Vehicle upgrades
-const calculateStatBonuses = async (upgrades) => {
-    return upgrades.reduce((acc, upgrade) => {
+const calculateStatBonuses = async (vehicle) => {
+
+    if (!vehicle.upgrades || vehicle.upgrades.length === 0) return { speedBonus: 0, accelerationBonus: 0, handlingBonus: 0 };
+    return vehicle.upgrades.reduce((acc, upgrade) => {
         acc.speedBonus += upgrade.stats.speed || 0;
         acc.accelerationBonus += upgrade.stats.acceleration || 0;
         acc.handlingBonus += upgrade.stats.handling || 0;
@@ -316,7 +318,8 @@ const calculateStatBonuses = async (upgrades) => {
 
 const generateVehiclestats = async (vehicle) => {
     let logger = await getLogger();
-    const statBonuses = await calculateStatBonuses(vehicle.upgrades);
+    if (!vehicle) return null;
+    const statBonuses = await calculateStatBonuses(vehicle);
     const speedBonus = statBonuses.speedBonus;
     const accelerationBonus = statBonuses.accelerationBonus;
     const handlingBonus = statBonuses.handlingBonus;
