@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonStyle, ButtonBuilder } = require('discord.js');
-
-const Profile = require('../models/Profile');
+const { Profile } = require('../models');
 const { DateTime } = require('luxon');
 const { giveXP, giveCoins, resetLuckyTokens } = require('../utils/main');
 const { getLogger } = require('../utils/logging');

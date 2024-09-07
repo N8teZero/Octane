@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, CommandInteraction, EmbedBuilder, ChannelType } = require('discord.js');
-const GuildSettings = require('../models/GuildSettings');
+const { GuildSettings } = require('../models');
 const { loadImage } = require('canvas');
 const { getLogger } = require('../utils/logging');
 

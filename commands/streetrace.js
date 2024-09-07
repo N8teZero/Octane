@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
 const { DateTime } = require('luxon');
-const Profile = require('../models/Profile');
+const { Profile } = require('../models');
 const { giveXP, giveCoins, giveItem, updateChallenge, generateVehiclestats } = require('../utils/main');
 const { aiRaces } = require('../data/vehicles');
 const { getLogger } = require('../utils/logging');

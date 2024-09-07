@@ -1,7 +1,7 @@
-const Profile = require('../models/Profile');
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('@discordjs/builders');
 const { ButtonStyle } = require('discord-api-types/v9');
 const { getLogger } = require('../utils/logging');
+const { Profile } = require('../models');
 
 module.exports = {
     data: new SlashCommandBuilder()

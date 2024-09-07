@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const Profile = require('../models/Profile');
-const Challenge = require('../models/Challenge');
+const { Profile, Challenge } = require('../models');
 const { getLogger } = require('../utils/logging');
 
 module.exports = {

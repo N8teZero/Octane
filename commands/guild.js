@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const Profile = require('../models/Profile');
-const GuildSettings = require('../models/GuildSettings');
+const { Profile, GuildSettings } = require('../models');
 const { getLogger } = require('../utils/logging');
 const { getSetting } = require('../utils/settingsCache');
 

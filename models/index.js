@@ -8,10 +8,10 @@ const Crew = require('./Crews');
 
 module.exports = {
     Challenge,
+    Crew,
     GuildSettings,
-    Profile,
     Item,
     Job,
-    BotSetting,
-    Crew
+    Profile,
+    BotSetting
 };

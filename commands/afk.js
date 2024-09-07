@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('@discordjs/builders');
-const Profile = require('../models/Profile');
+const { Profile } = require('../models');
 const { DateTime } = require('luxon');
 const { giveXP, giveCoins, calculatePassiveIncome } = require('../utils/main');
 const { getLogger } = require('../utils/logging');

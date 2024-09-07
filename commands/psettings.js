@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageAttachment } = require('discord.js');
-const Profile = require('../models/Profile');
+const { Profile } = require('../models');
 const { DateTime } = require('luxon');
 const { getLogger } = require('../utils/logging');
 

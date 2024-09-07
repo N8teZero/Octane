@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const Profile = require('../models/Profile');
+const { Profile } = require('../models');
 const { calculateLevel, calculatePlayerScore, updateChallenge, calculatePassiveIncome } = require('../utils/main');
 const { generateAndCacheProfileImage } = require('../utils/profileUtils');
 const { getLogger } = require('../utils/logging');

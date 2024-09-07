@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
-const Profile = require('../models/Profile');
-const Job = require('../models/Jobs');
+const { Profile, Job } = require('../models');
 const { DateTime } = require('luxon');
 const { getLogger } = require('../utils/logging');
 

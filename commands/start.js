@@ -1,8 +1,8 @@
-const Profile = require('../models/Profile');
 const { SelectMenuBuilder } = require('@discordjs/builders');
 const { starterVehicles } = require('../data/vehicles');
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { getLogger } = require('../utils/logging');
+const { Profile } = require('../models');
 
 module.exports = {
     data: new SlashCommandBuilder()

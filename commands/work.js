@@ -1,9 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const Profile = require('../models/Profile');
 const { giveXP, giveCoins, passiveRefuel, updateChallenge, rewardsTable } = require('../utils/main');
 const { DateTime } = require('luxon');
-const Job = require('../models/Jobs');
 const { getLogger } = require('../utils/logging');
+const { Profile, Job } = require('../models');
 
 module.exports = {
     data: new SlashCommandBuilder()

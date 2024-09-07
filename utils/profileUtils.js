@@ -1,10 +1,10 @@
-const Profile = require('../models/Profile');
 const { calculateLevel } = require('./main');
 const { createCanvas, loadImage, registerFont } = require('canvas');
 const fs = require('fs');
 const path = require('path');
 const { DateTime } = require('luxon');
 const { getLogger } = require('../utils/logging');
+const { Profile } = require('../models');
 
 registerFont('./assets/fonts/Honk.ttf', { family: 'Honk' });
 registerFont('./assets/fonts/RobotoMono.ttf', { family: 'RobotoMono' });
