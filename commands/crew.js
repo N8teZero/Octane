@@ -251,12 +251,12 @@ async function leaveCrew(interaction) {
 }
 
 async function crewInfo(interaction) {
-    let tag = interaction.options.getString('tag').toUpperCase();
+    let tag = interaction.options.getString('tag');
     if (!tag) {
         const profile = await Profile.findOne({ userId: interaction.user.id });
         tag = profile.crew;
     }
-    const crew = await Crew.findOne({ crewTag: tag });
+    const crew = await Crew.findOne({ crewTag: tag.toUpperCase() });
     if (!crew) {
         await interaction.reply({ content: "Crew not found.", ephemeral: true });
         return;

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
-const crew = require('../commands/crew');
 const { getLogger } = require('../utils/logging');
 
 

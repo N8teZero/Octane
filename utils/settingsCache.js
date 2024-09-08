@@ -1,4 +1,4 @@
-const { BotSetting } = require('../models');
+const  BotSetting  = require('../models/Settings');
 
 const settingsCache = {};
 

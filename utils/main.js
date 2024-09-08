@@ -1,7 +1,7 @@
 // Description: Utility functions for xp, coins, and fuel related operations.
 const { DateTime } = require('luxon');
 const { getLogger } = require('./logging');
-const { Profile, Job, GuildSettings, Item } = require('../models');
+const { Profile, Job, GuildSettings, Item, Challenge } = require('../models');
 
 // Main functions
 
@@ -270,8 +270,6 @@ const calculatePlayerScore = async (profile) => {
 }
 
 // Challenges
-const Challenge = require('../models/Challenge');
-
 async function updateChallenge(user, type) {
     let logger = await getLogger();
     const now = DateTime.now().setZone('America/New_York');
