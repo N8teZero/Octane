@@ -43,6 +43,30 @@ const inventorySchema = new mongoose.Schema({
     quantity: { type: Number, default: 1 }
 });
 
+const supplyRunSchema = new mongoose.Schema({
+    startTime: { type: Date },
+    endTime: { type: Date },
+    couponType: { type: String, default: 't1' }, // Default to tier 1 coupon
+    state: { type: String, default: 'Available' }
+});
+
+// Blessings are a way to upgrade your player and vehicle stats. They are obtained by donating 200 feast supplies. Effects include speed, acceleration, and handling boosts; player luck; and vehicle fuel efficiency.
+const blessingsSchema = new mongoose.Schema({
+    blessingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Blessing' },
+    active: { type: Boolean, default: false },
+    locked: { type: Boolean, default: false },
+    level: { type: Number, default: 1 },
+    type: { type: String, default: 'Stat' },
+    lastUpdated: { type: Date, default: () => DateTime.now().setZone('America/New_York').toJSDate() },
+    stats: {
+        speed: { type: Number, default: 0.0 },
+        acceleration: { type: Number, default: 0.0 },
+        handling: { type: Number, default: 0.0 },
+        luck: { type: Number, default: 0.0 },
+        fuelEfficiency: { type: Number, default: 0.0 }
+    }
+});
+
 const profileSchema = new mongoose.Schema({
     userId: { type: String, required: true, unique: true },
     guildId: { type: String, required: true },
@@ -77,6 +101,14 @@ const profileSchema = new mongoose.Schema({
     workCount: { type: Number, default: 0 },
     lotteryCount: { type: Number, default: 0 },
     luckyTokens: { type: Number, default: 5 },
+    feastSupplies: { type: Number, default: 0 },
+    lastFeastRun: { type: Date, default: () => DateTime.now().setZone('America/New_York').toJSDate() },
+    supplyCouponsSpent: { type: Number, default: 0 },
+    supplyCouponT1: { type: Number, default: 0 },
+    supplyCouponT2: { type: Number, default: 0 },
+    supplyRuns: { type: [supplyRunSchema], default: () => [{}, {}, {}] },
+    shrineXP: { type: Number, default: 0 },
+    blessings: [blessingsSchema],
     prestigeLevel: { type: Number, default: 0 },
     prestigeTokens: { type: Number, default: 0 },
     job: { type: String, default: null },

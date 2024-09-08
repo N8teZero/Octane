@@ -15,7 +15,7 @@ module.exports = {
             await interaction.reply({ content: "You need to create a profile to scrap parts.", ephemeral: true });
             return;
         }
-        const scrapParts = profile.inventory.filter(item => item.condition !== "Usable");
+        const scrapParts = profile.inventory.filter(item => item.condition !== "Usable" && item.category === "Part");
         if (scrapParts.length < 1) {
             await interaction.reply({ content: "You don't have any parts to scrap.", ephemeral: true });
             return;
@@ -23,7 +23,7 @@ module.exports = {
 
         try {
             const scrapValue = scrapParts.reduce((acc, item) => acc + item.value, 0);
-            profile.inventory = profile.inventory.filter(item => item.condition === "Usable");
+            profile.inventory = profile.inventory.filter(item => item.condition === "Usable" || item.category !== "Part");
             await profile.save();
 
             await giveCoins(profile, scrapValue, 'Scrapped parts');

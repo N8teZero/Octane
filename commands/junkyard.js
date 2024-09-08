@@ -43,7 +43,7 @@ module.exports = {
         const finalLoot = Object.values(lootAggregate);
         //logger.debug(`Final Loot: ${JSON.stringify(finalLoot)}`);
         finalLoot.forEach(item => {
-            profile.inventory.push({ name: item.name, condition: item.condition, value: item.value });
+            profile.inventory.push({ name: item.name, condition: item.condition, value: item.value, category: 'Part' });
         });
 
         profile.junkyardPasses -= count;

@@ -15,7 +15,9 @@ module.exports = {
         }
 
         try {
-            const partsSummary = profile.inventory.reduce((acc, item) => {
+            // Filter inventory for category 'Part'
+            const parts = profile.inventory.filter(item => item.category === 'Part');
+            const partsSummary = parts.reduce((acc, item) => {
                 if (!acc[item.name]) {
                     acc[item.name] = {};
                 }
