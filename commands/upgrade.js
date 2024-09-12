@@ -60,3 +60,16 @@ module.exports = {
         }
     }
 };
+
+// We can use this logic of blessings for vehicle upgrades as well.
+// const BLESSING_CATEGORIES = {
+//    speed: {
+//        name: "Speed",
+//        effects: ["health", "stamina"]
+//    },
+//    acceleration: {
+//        name: "Acceleration",
+//        effects: ["luck", "perception"]
+//    },
+//    // Define other categories similarly...
+//};
