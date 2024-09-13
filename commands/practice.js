@@ -39,8 +39,8 @@ module.exports = {
         try {
             await interaction.deferReply();
 
-            const playerStats = await generateVehiclestats(playerVehicle);
-            const opponentStats = await generateVehiclestats(opponentVehicle);
+            const playerStats = await generateVehiclestats(profile);
+            const opponentStats = await generateVehiclestats(opponentProfile);
             
             const playerPower = playerStats.totalPower;
             const opponentPower = opponentStats.totalPower;

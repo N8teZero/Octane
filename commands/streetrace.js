@@ -81,7 +81,7 @@ module.exports = {
             const isNextLevel = i.customId === 'race_next_level';
             const aiVehicle = isNextLevel ? aiVehicleNext : aiVehicleCurrent;
             try {
-                const result = await simulateRace(profile, aiVehicle, playerVehicle);
+                const result = await simulateRace(profile, aiVehicle);
                 const { xpEarned, coinsEarned } = await calculateStreetRacingReward(profile, i.customId === 'race_next_level' ? aiVehicleNext.level : aiVehicleCurrent.level);
                 //logger.debug(`Race rewards: ${xpEarned} XP, ${coinsEarned} coins`); 
                 setTimeout(async () => {
@@ -137,12 +137,11 @@ module.exports = {
     }
 };
 
-async function simulateRace(profile, aiVehicle, playerVehicle) {
-    const vehicleStats = await generateVehiclestats(playerVehicle);
-    const aiStats = await generateVehiclestats(aiVehicle);
+async function simulateRace(profile, aiVehicle) {
+    const vehicleStats = await generateVehiclestats(profile);
 
     const playerTotal = vehicleStats.totalPower + (profile.level * 2);
-    const aiTotal = aiStats.totalPower;
+    const aiTotal = aiVehicle.stats.speed + aiVehicle.stats.acceleration + aiVehicle.stats.handling;
 
     const odds = playerTotal / (playerTotal + aiTotal);
     const rng = Math.random();
