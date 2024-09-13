@@ -1,26 +1,10 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { getLogger } = require('../utils/logging');
 const { Profile } = require('../models');
 const { DateTime } = require('luxon');
+const { getShrineEmbed } = require('../utils/getEmbed');
+const { calculateShrineLevel, updateStats } = require('../utils/main');
 
-// Blessings are a way to upgrade your player and vehicle stats. They are obtained by donating 200 feast supplies. Effects include speed, acceleration, and handling boosts; player luck; and vehicle fuel efficiency.
-// Player can only have 5 blessings at a time. Blessings can be locked/unlocked. Locked blessings cannot be changed. Blessings can be leveled up to increase their effects.
-//  const blessingsSchema = new mongoose.Schema({
-//      blessingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Blessing' },
-//      active: { type: Boolean, default: false },
-//      locked: { type: Boolean, default: false },
-//      level: { type: Number, default: 1 },
-//      type: { type: String, default: 'Stat' },
-//      lastUpdated: { type: Date, default: () => DateTime.now().setZone('America/New_York').toJSDate() },
-//      stats: {
-//          speed: { type: Number, default: 0.0 },
-//          acceleration: { type: Number, default: 0.0 },
-//          handling: { type: Number, default: 0.0 },
-//          luck: { type: Number, default: 0.0 },
-//          fuelEfficiency: { type: Number, default: 0.0 }
-//      }
-//  });
-//  let stats = ['speed', 'acceleration', 'handling', 'luck', 'fuelEfficiency'];
 const BLESSING_CATEGORIES = {
     speed: {
         name: "Speed",
@@ -72,28 +56,12 @@ module.exports = {
             await interaction.reply({ content: "You need to create a profile view shrine.", ephemeral: true });
             return;
         }
-
-        client.on('interactionCreate', async interaction => {
-            if (!interaction.isButton()) return;
-            const match = interaction.customId.match(/^toggle_lock_(\d+)$/);
-            if (match) {
-                const index = parseInt(match[1], 10);
-                const profile = await Profile.findOne({ userId: interaction.user.id });
-        
-                if (profile && profile.blessings && profile.blessings[index]) {
-                    profile.blessings[index].locked = !profile.blessings[index].locked;
-                    await profile.save();
-        
-                    const response = await generateEmbed(profile);
-                    await interaction.update({ embeds: [response.embed], components: response.rows });
-                }
-            }
-        });
         
         try {
             if (!profile.blessings || profile.blessings.length === 0) {
                 profile.blessings = [{
                     active: false,
+                    locked: false,
                     level: 1,
                     type: null,
                     lastUpdated: DateTime.now().setZone('America/New_York').toJSDate(),
@@ -106,6 +74,7 @@ module.exports = {
                     }
                 }, {
                     active: false,
+                    locked: false,
                     level: 1,
                     type: null,
                     lastUpdated: DateTime.now().setZone('America/New_York').toJSDate(),
@@ -118,6 +87,7 @@ module.exports = {
                     }
                 }, {
                     active: false,
+                    locked: false,
                     level: 1,
                     type: null,
                     lastUpdated: DateTime.now().setZone('America/New_York').toJSDate(),
@@ -130,6 +100,7 @@ module.exports = {
                     }
                 }, {
                     active: false,
+                    locked: false,
                     level: 1,
                     type: null,
                     lastUpdated: DateTime.now().setZone('America/New_York').toJSDate(),
@@ -142,6 +113,7 @@ module.exports = {
                     }
                 }, {
                     active: false,
+                    locked: false,
                     level: 1,
                     type: null,
                     lastUpdated: DateTime.now().setZone('America/New_York').toJSDate(),
@@ -156,7 +128,7 @@ module.exports = {
                 await profile.save();
             }
 
-            let e = await generateEmbed(profile);
+            let e = await getShrineEmbed(profile);
 
             const message = await interaction.reply({ embeds: [e.embed], components: e.rows, fetchReply: true });
             const filter = i => i.user.id === interaction.user.id && (i.customId === 'b1' || i.customId === 'b2' || i.customId === 'b3' || i.customId === 'b4' || i.customId === 'b5' || i.customId === 'getBlessing');
@@ -164,12 +136,13 @@ module.exports = {
 
             collector.on('collect', async i => {
                 if (i.customId === 'getBlessing') {
-                    console.log('getBlessing');
+                    //console.log('getBlessing');
                     const blessing = await generateBlessing(profile);
                     console.log('blessing', blessing);
                     const openBlessing = profile.blessings.find(blessing => !blessing.locked);
                     if (!openBlessing) {
-                        return i.editReply({ content: 'You already have 5 locked blessings. Please unlock one before getting a new one.', ephemeral: true });
+                        console.log('no open blessings');
+                        return i.update({ content: 'You already have 5 locked blessings. Please unlock one before getting a new one.', ephemeral: true });
                     }
 
                     openBlessing.active = true;
@@ -177,17 +150,19 @@ module.exports = {
                     openBlessing.stats = blessing.stats;
                     openBlessing.level = blessing.level;
                     openBlessing.lastUpdated = DateTime.now().setZone('America/New_York').toJSDate();
-                    profile.feastSupplies -= 20;// Change to 200 when ready
+                    //profile.feastSupplies -= 100;
                     profile.shrineXP += 5;
                     await profile.save();
 
-                    e = await generateEmbed(profile);
-                    await i.update({ embeds: [e.embed], components: e.rows, fetchReply: true });
+                    await updateStats(profile);
+
+                    e = await getShrineEmbed(profile);
+                    await i.update({ content: `You received a blessing: ${blessing.type}!`, embeds: [e.embed], components: e.rows, fetchReply: true });
                 }
             });
 
             collector.on('end', async () => {
-                e = await generateEmbed(profile);
+                e = await getShrineEmbed(profile);
                 await message.edit({ embeds: [e.embed], components: [] });
             });
         } catch (err) {
@@ -197,86 +172,15 @@ module.exports = {
     }
 };
 
-async function generateEmbed(profile) {
-    const shrineLvl = await calculateShrineLevel(profile.shrineXP);
-    const embed = new EmbedBuilder()
-        .setColor(0x00AE86)
-        .setTitle(`Car Gods Shrine - Level ${shrineLvl}`)
-        .setDescription(`**Feast Supplies:** ${[profile.feastSupplies]}\n\nSpend 200 Feast Supplies to unlock a random blessing.`)
-        .setFooter({text: 'Shrine XP: ' + profile.shrineXP});
-
-    now = DateTime.now().setZone('America/New_York').toJSDate()
-    const rows = [
-        new ActionRowBuilder(), // For blessing lock/unlock buttons
-        new ActionRowBuilder()  // For additional controls like "Get Blessing"
-    ];
-
-    profile.blessings.forEach((blessing, index) => {
-        const lockState = blessing.locked ? '🔒' : '🔓';
-        const lockLabel = blessing.locked ? 'Unlock' : 'Lock';
-        const bonusInfo = Object.entries(blessing.stats)
-        .filter(([stat, value]) => value > 0)
-        .map(([stat, value]) => `${stat}: ${value}x`)
-        .join('\n');
-        const bonusDescription = blessing.active ? `**Active:** ${blessing.type}\n**Level:** ${blessing.level}\n**Bonus:** ${bonusInfo}` : 'Inactive';
-        embed.addFields({
-            name: `Blessing ${index + 1} (${lockState})`,
-            value: bonusDescription,
-            inline: true
-        });
-
-        
-        const disableButton = !blessing.active; // Disable if the slot is not active
-        const button = new ButtonBuilder()
-            .setCustomId(`toggle_lock_${index}`)
-            .setLabel(lockLabel)
-            .setEmoji(lockState)
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(disableButton);
-
-        if (index < 3) {
-            rows[0].addComponents(button);
-        } else {
-            rows[1].addComponents(button);
-        }
-    });
-
-    const getBlessingButton = new ButtonBuilder()
-        .setCustomId('getBlessing')
-        .setLabel('Get Blessing')
-        .setStyle(ButtonStyle.Success)
-        .setDisabled(profile.feastSupplies < 20); // Change to 200 when ready
-
-    rows[1].addComponents(getBlessingButton);
-
-    return { embed, rows };
-}
-
-async function calculateShrineLevel(xp) {
-    let level = 1;
-    if (xp >= 100000) { // 10000 / 5 = 2000 blessings
-        level = 6;
-    } else if (xp >= 5000) { // 5000 / 5 = 1000 blessings
-        level = 5;
-    } else if (xp >= 2500) { // 2500 / 5 = 500 blessings
-        level = 4;
-    } else if (xp >= 1000) { // 1000 / 5 = 200 blessings
-        level = 3;
-    } else if (xp >= 500) { // 500 / 5 = 100 blessings
-        level = 2;
-    }
-    return level;
-}
-
 async function generateBlessing(profile) {
     const shrineLvl = await calculateShrineLevel(profile.shrineXP);
-    console.log('shrineLvl', shrineLvl);
+    //console.log('shrineLvl', shrineLvl);
     const levelOdds = await calculateLevelOdds(shrineLvl);
-    console.log('levelOdds', levelOdds);
+    //console.log('levelOdds', levelOdds);
     const blessingLevel = await pickBlessingLevel(levelOdds);
-    console.log('blessingLevel', blessingLevel);
+    //console.log('blessingLevel', blessingLevel);
     const category = await pickRandomCategory();
-    console.log('category', category);
+    //console.log('category', category);
     const stats = await assignBlessingStats(blessingLevel, category);
     return stats;
 }

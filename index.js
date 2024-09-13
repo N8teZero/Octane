@@ -12,6 +12,7 @@ const { setupLogger, getLogger } = require('./utils/logging');
 const GuildSettings = require('./models/GuildSettings');
 const Profile = require('./models/Profile');
 const { calculateLevel, passiveRefuel, updateBooster } = require('./utils/main');
+const { getShrineEmbed } = require('./utils/getEmbed');
 
 async function startBot() {
     if (!token) {
@@ -184,7 +185,6 @@ async function startBot() {
                     }
                 }
             } else if (interaction.isButton()) {
-                //const match = interaction.customId.match(/^toggle_lock_(\d+)$/);
                 if (interaction.customId === 'scrap_items') {
                     try {
                         const command = client.commands.get('scrap');
@@ -212,18 +212,22 @@ async function startBot() {
                         await interaction.reply({ content: 'Failed to start streetrace.', ephemeral: true });
                         logger.error(interaction.user.tag + ' | race_menu: ' + error);
                     }
-                } /*else if (match) {
-                    const index = parseInt(match[1], 10);
+                } else if (interaction.isButton() && interaction.customId.startsWith('toggle_lock_')) {
+                    const index = parseInt(interaction.customId.split('_')[2], 10);
                     const profile = await Profile.findOne({ userId: interaction.user.id });
-            
-                    if (profile && profile.blessings && profile.blessings[index]) {
-                        profile.blessings[index].locked = !profile.blessings[index].locked;
-                        await profile.save();
-            
-                        const response = await generateEmbed(profile);
-                        await interaction.update({ embeds: [response.embed], components: response.rows });
+                    //console.log(interaction.customId.split('_'));
+                    //console.log(`customId: ${interaction.customId} | index: ${index}`);
+
+                    if (profile.blessings[index].locked) {
+                        profile.blessings[index].locked = false;
+                    } else {
+                        profile.blessings[index].locked = true;
                     }
-                }*/
+                    await profile.save();
+            
+                    const response = await getShrineEmbed(profile);
+                    await interaction.update({ embeds: [response.embed], components: response.rows });
+                }
             }
         });
         

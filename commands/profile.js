@@ -7,7 +7,7 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
     .setName('profile')
-    .setDescription('View your profile or another user\'s profile')
+    .setDescription('View player profiles')
     .addUserOption(option =>
         option.setName('user')
             .setDescription('The user whose profile you want to view')
@@ -49,7 +49,7 @@ module.exports = {
                 .addFields(
                 { name: 'Coins', value: `<:coins:1269411594685644800> ${cleanCoins.toLocaleString()}`, inline: true },
                 { name: 'Tokens', value: `<:lotterytoken:1269399775065804862> ${profile.luckyTokens.toLocaleString()}\n<:crewtoken:1269432351407083610> ${profile.crewTokens.toLocaleString()}\n<:junkyardpass:1273688549429870633> ${profile.junkyardPasses.toLocaleString()}`, inline: true },
-                { name: '<Beta>', value: `Supplies: ${profile.feastSupplies}\n\nT1: ${profile.supplyCouponT1} | T2: ${profile.supplyCouponT2} | T3: ${profile.supplyCouponT3}`, inline: true },
+                { name: '<Beta>', value: `Supplies: ${profile.feastSupplies}\n\nT1: ${profile.supplyCouponT1} | T2: ${profile.supplyCouponT2}`, inline: true },
                 { name: 'Streetraces', value: `${profile.streetRaceStats.wins}W / ${profile.streetRaceStats.losses}L\n(${profile.streetRaceCount} Total)`, inline: true },
                 { name: 'Dailies Collected', value: `${profile.dailyCount}`, inline: true },
                 { name: 'Weeklies Collected', value: `${profile.weeklyCount}`, inline: true },

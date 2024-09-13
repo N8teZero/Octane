@@ -2,6 +2,7 @@
 const { DateTime } = require('luxon');
 const { getLogger } = require('./logging');
 const { Profile, Job, GuildSettings, Item, Challenge } = require('../models');
+const { plugin } = require('mongoose');
 
 // Main functions
 
@@ -54,6 +55,22 @@ async function calculateLevel(xp) {
         nextLevelXp,
         progress,
     };
+}
+
+async function calculateShrineLevel(xp) {
+    let level = 1;
+    if (xp >= 100000) { // 10000 / 5 = 2000 blessings
+        level = 6;
+    } else if (xp >= 5000) { // 5000 / 5 = 1000 blessings
+        level = 5;
+    } else if (xp >= 2500) { // 2500 / 5 = 500 blessings
+        level = 4;
+    } else if (xp >= 1000) { // 1000 / 5 = 200 blessings
+        level = 3;
+    } else if (xp >= 500) { // 500 / 5 = 100 blessings
+        level = 2;
+    }
+    return level;
 }
 
 async function giveXP(profile, guild, xp, client, source) {
@@ -334,13 +351,14 @@ const calculateStatBonuses = async (vehicle) => {
     }, { speedBonus: 0, accelerationBonus: 0, handlingBonus: 0 });
 }
 
-const generateVehiclestats = async (vehicle) => {
+const generateVehiclestats = async (profile) => {
+    const vehicle = profile.vehicles.find(v => v.isActive);
     let logger = await getLogger();
     if (!vehicle) return null;
-    const statBonuses = await calculateStatBonuses(vehicle);
-    const speedBonus = statBonuses.speedBonus;
-    const accelerationBonus = statBonuses.accelerationBonus;
-    const handlingBonus = statBonuses.handlingBonus;
+    const upgradeBonuses = await calculateStatBonuses(vehicle);
+    const speedBonus = upgradeBonuses.speedBonus + profile.stats.speed; 
+    const accelerationBonus = upgradeBonuses.accelerationBonus + profile.stats.acceleration;
+    const handlingBonus = upgradeBonuses.handlingBonus + profile.stats.handling;
     const speedText = `S: ${vehicle.stats.speed} (+${speedBonus})`;
     const accelerationText = `A: ${vehicle.stats.acceleration} (+${accelerationBonus})`;
     const handlingText = `H: ${vehicle.stats.handling} (+${handlingBonus})`;
@@ -351,7 +369,7 @@ const generateVehiclestats = async (vehicle) => {
 
     const totalPower = speed + acceleration + handling;
 
-    logger.debug(`Vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model} | S: ${totalPower} | A: ${accelerationBonus} | H: ${handlingBonus}`);
+    logger.debug(`generateVehiclestats: ${vehicle.year} ${vehicle.make} ${vehicle.model} | S: ${totalPower} | A: ${accelerationBonus} | H: ${handlingBonus}`);
 
     return { totalPower, speedText, accelerationText, handlingText, speed, acceleration, handling };
 }
@@ -410,6 +428,37 @@ const partBonuses = {
         handling: 0.5
     }
 }
+
+// Update player stats based on active blessings
+async function updateStats(profile) {
+    let logger = await getLogger();
+    const activeBlessings = profile.blessings.filter(b => b.active);
+    if (!activeBlessings.length) return;
+    const initialStats = {
+        speed: 0,
+        acceleration: 0,
+        handling: 0,
+        luck: 0,
+        fuelEfficiency: 0
+    };
+
+    const activeBlessingStats = activeBlessings.reduce((acc, blessing) => {
+        Object.keys(initialStats).forEach(stat => {
+            if (blessing.stats[stat]) {
+                acc[stat] += blessing.stats[stat];
+            }
+        });
+        return acc;
+    }, initialStats);
+
+    console.log(`Stat Updates - Speed: ${activeBlessingStats.speed} | Accel: ${activeBlessingStats.acceleration} | Handling: ${activeBlessingStats.handling} | Luck: ${activeBlessingStats.luck} | Fuel: ${activeBlessingStats.fuelEfficiency}`);
+    profile.stats = { ...profile.stats, ...activeBlessingStats };  // Update the stats by merging with existing ones
+
+    await profile.save();
+}
+
+
+// Item functions
 
 async function getItemDetails(item, quantity) {
     let logger = await getLogger();
@@ -476,11 +525,14 @@ async function itemPurchase(profile, item, quantity) {
     await itemData.save();
 }
 
+
+
 module.exports = {
     // Fuel related functions
     passiveRefuel,
     // Level related functions
     calculateLevel,
+    calculateShrineLevel,
     giveXP,
     giveCoins,
     giveItem,
@@ -496,6 +548,7 @@ module.exports = {
     calculateStatBonuses,
     partBonuses,
     generateVehiclestats,
+    updateStats,
     // Item functions
     getItemDetails,
     itemPurchase

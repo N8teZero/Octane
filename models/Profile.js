@@ -130,7 +130,14 @@ const profileSchema = new mongoose.Schema({
         losses: { type: Number, default: 0 }
     },
     vehicles: [vehicleSchema],
-    challenges: [challengeProgressSchema]
+    challenges: [challengeProgressSchema],
+    stats: {
+        speed: { type: Number, default: 0 },
+        acceleration: { type: Number, default: 0 },
+        handling: { type: Number, default: 0 },
+        luck: { type: Number, default: 0 },
+        fuelEfficiency: { type: Number, default: 0 }
+    }
 });
 
 
