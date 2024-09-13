@@ -184,6 +184,7 @@ async function startBot() {
                     }
                 }
             } else if (interaction.isButton()) {
+                //const match = interaction.customId.match(/^toggle_lock_(\d+)$/);
                 if (interaction.customId === 'scrap_items') {
                     try {
                         const command = client.commands.get('scrap');
@@ -211,7 +212,18 @@ async function startBot() {
                         await interaction.reply({ content: 'Failed to start streetrace.', ephemeral: true });
                         logger.error(interaction.user.tag + ' | race_menu: ' + error);
                     }
-                }
+                } /*else if (match) {
+                    const index = parseInt(match[1], 10);
+                    const profile = await Profile.findOne({ userId: interaction.user.id });
+            
+                    if (profile && profile.blessings && profile.blessings[index]) {
+                        profile.blessings[index].locked = !profile.blessings[index].locked;
+                        await profile.save();
+            
+                        const response = await generateEmbed(profile);
+                        await interaction.update({ embeds: [response.embed], components: response.rows });
+                    }
+                }*/
             }
         });
         
