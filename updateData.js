@@ -63,6 +63,40 @@ async function resetDailies() {
             changed = true;
         }
 
+        // Add supply run coupons
+        if (!profile.supplyRuns || profile.supplyRuns.length === 0) {
+            profile.supplyRuns = [{
+                startTime: now,
+                endTime: now,
+                couponType: null,
+                state: 'Available'
+            }, {
+                startTime: now,
+                endTime: now,
+                couponType: null,
+                state: 'Available'
+            }, {
+                startTime: now,
+                endTime: now,
+                couponType: null,
+                state: 'Available'
+            }];
+            changed = true;
+        }
+        if (profile.supplyCouponT1 < 50) { profile.supplyCouponT1 += 5; changed = true; }
+
+        // Add player stats if they are missing
+        if (!profile.stats) {
+            profile.stats = {
+                speed: 0,
+                acceleration: 0,
+                handling: 0,
+                luck: 0,
+                fuelEfficiency: 0
+            };
+            changed = true;
+        }
+
         if (changed) {
             await profile.save();
             
