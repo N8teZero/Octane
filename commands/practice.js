@@ -39,8 +39,8 @@ module.exports = {
         try {
             await interaction.deferReply();
 
-            const playerStats = await generateVehiclestats(profile);
-            const opponentStats = await generateVehiclestats(opponentProfile);
+            const playerStats = await generateVehiclestats(profile, playerVehicle);
+            const opponentStats = await generateVehiclestats(opponentProfile, opponentVehicle);
             
             const playerPower = playerStats.totalPower;
             const opponentPower = opponentStats.totalPower;
@@ -52,10 +52,10 @@ module.exports = {
                 .addFields(
                     { name: `${profile.username}`, value: `${playerVehicle.make} ${playerVehicle.model}`, inline: true },
                     { name: 'Power', value: `${playerPower}`, inline: true },
-                    { name: 'Stats', value: `${playerStats.speedText}\n${playerStats.accelerationText}\n${playerStats.handlingText}`, inline: true },
+                    { name: 'Stats', value: `${playerStats.speedText}\n${playerStats.accelText}\n${playerStats.handlingText}`, inline: true },
                     { name: `${opponentProfile.username}`, value: `${opponentVehicle.make} ${opponentVehicle.model}`, inline: true },
                     { name: 'Power', value: `${opponentPower}`, inline: true },
-                    { name: 'Stats', value: `${opponentStats.speedText}\n${opponentStats.accelerationText}\n${opponentStats.handlingText}`, inline: true },
+                    { name: 'Stats', value: `${opponentStats.speedText}\n${opponentStats.accelText}\n${opponentStats.handlingText}`, inline: true },
                     { name: '\u200B', value: '\u200B', inline: false },
                     { name: 'Result', value: result ? `${profile.username} won!` : `${opponentProfile.username} won!`, inline: false }
                 )

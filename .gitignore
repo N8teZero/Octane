@@ -3,6 +3,7 @@ ecosystem.config.js
 
 # Local only
 regCom.js
+createVehicles.js
 
 # Logs
 logs

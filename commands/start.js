@@ -1,8 +1,7 @@
 const { SelectMenuBuilder } = require('@discordjs/builders');
-const { starterVehicles } = require('../data/vehicles');
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { getLogger } = require('../utils/logging');
-const { Profile } = require('../models');
+const { Profile, Vehicle } = require('../models');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -44,12 +43,16 @@ module.exports = {
                 .setTitle(`Choose a starting vehicle...`)
                 .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
                 .setDescription('They might not be the fastest, but they are free!')
-                .addFields(
-                    { name: 'Ford Fiesta',    value: `**Stats:**\nSpeed: 50, Acceleration: 30, Handling: 40` },
-                    { name: 'Toyota Corolla', value: `**Stats:**\nSpeed: 60, Acceleration: 40, Handling: 50` },
-                    { name: 'Honda Civic',    value: `**Stats:**\nSpeed: 55, Acceleration: 35, Handling: 45` }
-                )
-                .setFooter({ text: 'Type /help for a command list and more information' });
+                .setFooter({ text: 'Type /help for a command list and more information' })
+
+        const starterVehicles = Vehicle.find({ isStarterCar: true });
+        starterVehicles.forEach(vehicle => {
+            embed.addFields({
+                name: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
+                value: `**Stats:**\nSpeed: ${vehicle.stats.speed}\nAcceleration: ${vehicle.stats.acceleration}\nGrip: ${vehicle.stats.grip}\nSuspension: ${vehicle.stats.suspension}\nBrakes: ${vehicle.stats.brakes}\nDurability: ${vehicle.stats.durability}\nAerodynamics: ${vehicle.stats.aerodynamics}\nTorque: ${vehicle.stats.torque}\nHorsepower: ${vehicle.stats.horsepower}`,
+                inline: true
+            });
+        });
 
         await interaction.reply({ content: 'Please select your starter vehicle:', embeds: [embed], components: [row] });
 

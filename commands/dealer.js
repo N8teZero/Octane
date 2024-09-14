@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
-const { shopVehicles } = require('../data/vehicles');
-const { Profile } = require('../models');
+const { Profile, Vehicle } = require('../models');
 const { DateTime } = require('luxon');
 const { getLogger } = require('../utils/logging');
 
@@ -18,12 +17,25 @@ module.exports = {
             return;
         }
 
-        const forSaleCars = shopVehicles.filter(v => v.level <= profile.level && v.forsale);
+        const forSaleCars = Vehicle.filter(v => v.level <= profile.level && v.forsale);
         //const forSaleCars = Vehicles.filter(v => v.level <= profile.level && v.price <= profile.coins && v.forsale);
         if (forSaleCars.length === 0) {
             await interaction.reply('No cars available for sale that you can afford.');
             return;
         }
+
+        // speed: Number,
+        // acceleration: Number,
+        // grip: Number,
+        // suspension: Number,
+        // brakes: Number,
+        // fuelCapacity: Number,
+        // currentFuel: Number,
+        // durability: Number,
+        // aerodynamics: Number,
+        // torque: Number,
+        // horsepower: Number
+
 
         let pageIndex = 0;
         const vehicleImage = new AttachmentBuilder(forSaleCars[pageIndex].image, { name: 'vehicle.png' });
@@ -33,10 +45,16 @@ module.exports = {
             .setDescription(`You have <:coins:1269411594685644800> ${profile.coins.toLocaleString()}\nPrice: <:coins:1269411594685644800> ${forSaleCars[pageIndex].price.toLocaleString()}`)
             .setImage('attachment://vehicle.png')
             .addFields(
-                { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: true },
-                { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: true },
-                { name: 'Handling', value: `${forSaleCars[pageIndex].stats.handling}`, inline: true },
-                { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: true }
+                { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: false },
+                { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: false },
+                { name: 'Grip', value: `${forSaleCars[pageIndex].stats.grip}`, inline: false },
+                { name: 'Suspension', value: `${forSaleCars[pageIndex].stats.suspension}`, inline: false },
+                { name: 'Brakes', value: `${forSaleCars[pageIndex].stats.brakes}`, inline: false },
+                { name: 'Durability', value: `${forSaleCars[pageIndex].stats.durability}`, inline: false },
+                { name: 'Aerodynamics', value: `${forSaleCars[pageIndex].stats.aerodynamics}`, inline: false },
+                { name: 'Torque', value: `${forSaleCars[pageIndex].stats.torque}`, inline: false },
+                { name: 'Horsepower', value: `${forSaleCars[pageIndex].stats.horsepower}`, inline: false },
+                { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: false }
             )
             .setFooter({ text: `Page ${pageIndex + 1} of ${forSaleCars.length}` });
             //logger.debug(`Speed: ${forSaleCars[pageIndex].stats.speed} | Acceleration: ${forSaleCars[pageIndex].stats.acceleration} | Handling: ${forSaleCars[pageIndex].stats.handling} | Fuel: ${forSaleCars[pageIndex].stats.fuelCapacity}`);
@@ -104,10 +122,16 @@ module.exports = {
                 .setDescription(`You have <:coins:1269411594685644800> ${profile.coins.toLocaleString()}\nPrice: <:coins:1269411594685644800> ${forSaleCars[pageIndex].price.toLocaleString()}`)
                 .setImage('attachment://vehicle.png')
                 .addFields(
-                    { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: true },
-                    { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: true },
-                    { name: 'Handling', value: `${forSaleCars[pageIndex].stats.handling}`, inline: true },
-                    { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: true }
+                    { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: false },
+                { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: false },
+                { name: 'Grip', value: `${forSaleCars[pageIndex].stats.grip}`, inline: false },
+                { name: 'Suspension', value: `${forSaleCars[pageIndex].stats.suspension}`, inline: false },
+                { name: 'Brakes', value: `${forSaleCars[pageIndex].stats.brakes}`, inline: false },
+                { name: 'Durability', value: `${forSaleCars[pageIndex].stats.durability}`, inline: false },
+                { name: 'Aerodynamics', value: `${forSaleCars[pageIndex].stats.aerodynamics}`, inline: false },
+                { name: 'Torque', value: `${forSaleCars[pageIndex].stats.torque}`, inline: false },
+                { name: 'Horsepower', value: `${forSaleCars[pageIndex].stats.horsepower}`, inline: false },
+                { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: false }
                 )
                 .setFooter({ text: `Page ${pageIndex + 1} of ${forSaleCars.length}` });
             

@@ -36,7 +36,12 @@ module.exports = {
             existingUpgrade.level += 1;
             existingUpgrade.stats.speed += bonuses.speed;
             existingUpgrade.stats.acceleration += bonuses.acceleration;
-            existingUpgrade.stats.handling += bonuses.handling;
+            existingUpgrade.stats.grip += bonuses.grip;
+            existingUpgrade.stats.suspension += bonuses.suspension;
+            existingUpgrade.stats.brakes += bonuses.brakes;
+            existingUpgrade.stats.torque += bonuses.torque;
+            existingUpgrade.stats.horsepower += bonuses.horsepower;
+            existingUpgrade.stats.aerodynamics += bonuses.aerodynamics;
         } else {
             vehicle.upgrades.push({
                 type: itemToInstall,
@@ -44,7 +49,12 @@ module.exports = {
                 stats: {
                     speed: bonuses.speed,
                     acceleration: bonuses.acceleration,
-                    handling: bonuses.handling
+                    grip: bonuses.grip,
+                    suspension: bonuses.suspension,
+                    brakes: bonuses.brakes,
+                    torque: bonuses.torque,
+                    horsepower: bonuses.horsepower,
+                    aerodynamics: bonuses.aerodynamics
                 }
             });
         }

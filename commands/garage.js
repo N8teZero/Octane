@@ -22,8 +22,8 @@ module.exports = {
             .setDescription('Here are your vehicles and their stats:');
 
         for (const vehicle of vehicles) {
-            const vehicleStats = await generateVehiclestats(vehicle);
-            const statsText = `${vehicleStats.speedText}\n${vehicleStats.accelerationText}\n${vehicleStats.handlingText}\n\n${vehicle.stats.currentFuel.toLocaleString()}% Fuel`;
+            const vehicleStats = await generateVehiclestats(profile, vehicle);
+            const statsText = `${vehicleStats.speedText}\n${vehicleStats.accelText}\n${vehicleStats.gripText}\n${vehicleStats.suspensionText}\n${vehicleStats.brakesText}\n\n\n${vehicle.stats.currentFuel.toLocaleString()}% Fuel`;
             embed.addFields({
                 name: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
                 value: statsText,

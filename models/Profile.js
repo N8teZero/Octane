@@ -7,7 +7,13 @@ const upgradeSchema = new mongoose.Schema({
     stats: {
         speed: { type: Number, default: 0.0 },
         acceleration: { type: Number, default: 0.0 },
-        handling: { type: Number, default: 0.0 }
+        grip: { type: Number, default: 0.0 },
+        suspension: { type: Number, default: 0.0 },
+        brakes: { type: Number, default: 0.0 },
+        durability: { type: Number, default: 0.0 },
+        aerodynamics: { type: Number, default: 0.0 },
+        torque: { type: Number, default: 0.0 },
+        horsepower: { type: Number, default: 0.0 }
     }
 });
 
@@ -22,7 +28,13 @@ const vehicleSchema = new mongoose.Schema({
     stats: {
         speed: { type: Number, default: 0 },
         acceleration: { type: Number, default: 0 },
-        handling: { type: Number, default: 0 },
+        grip: { type: Number, default: 0 },
+        suspension: { type: Number, default: 0 },
+        brakes: { type: Number, default: 0 },
+        aerodynamics: { type: Number, default: 0 },
+        torque: { type: Number, default: 0 },
+        horsepower: { type: Number, default: 0 },
+        durability: { type: Number, default: 0 },
         fuelCapacity: { type: Number, default: 0 },
         currentFuel: { type: Number, default: 100 }
     }
@@ -61,7 +73,12 @@ const blessingsSchema = new mongoose.Schema({
     stats: {
         speed: { type: Number, default: 0.0 },
         acceleration: { type: Number, default: 0.0 },
-        handling: { type: Number, default: 0.0 },
+        grip: { type: Number, default: 0.0 },
+        suspension: { type: Number, default: 0.0 },
+        brakes: { type: Number, default: 0.0 },
+        aerodynamics: { type: Number, default: 0.0 },
+        torque: { type: Number, default: 0.0 },
+        horsepower: { type: Number, default: 0.0 },
         luck: { type: Number, default: 0.0 },
         fuelEfficiency: { type: Number, default: 0.0 }
     }
@@ -134,7 +151,12 @@ const profileSchema = new mongoose.Schema({
     stats: {
         speed: { type: Number, default: 0 },
         acceleration: { type: Number, default: 0 },
-        handling: { type: Number, default: 0 },
+        grip: { type: Number, default: 0 },
+        suspension: { type: Number, default: 0 },
+        brakes: { type: Number, default: 0 },
+        aerodynamics: { type: Number, default: 0 },
+        torque: { type: Number, default: 0 },
+        horsepower: { type: Number, default: 0 },
         luck: { type: Number, default: 0 },
         fuelEfficiency: { type: Number, default: 0 }
     }

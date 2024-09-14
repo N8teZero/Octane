@@ -5,6 +5,8 @@ const { DateTime } = require('luxon');
 const { getShrineEmbed } = require('../utils/getEmbed');
 const { calculateShrineLevel, updateStats } = require('../utils/main');
 
+// Create new blessing categories and levels with updated stats
+// speed, acceleration, grip, suspension, brakes, fuelCapacity, currentFuel, durability, aerodynamics, torque, horsepower
 const BLESSING_CATEGORIES = {
     speed: {
         name: "Speed",
@@ -14,9 +16,9 @@ const BLESSING_CATEGORIES = {
         name: "Acceleration",
         effects: ["acceleration"]
     },
-    handling: {
-        name: "Handling",
-        effects: ["handling"]
+    grip: {
+        name: "grip",
+        effects: ["grip"]
     },
     leadfoot: {
         name: "Leadfoot",
@@ -24,7 +26,7 @@ const BLESSING_CATEGORIES = {
     },
     cornering: {
         name: "Cornering",
-        effects: ["handling", "acceleration"]
+        effects: ["grip", "acceleration"]
     },
     fuelSaver: {
         name: "Fuel Saver",
@@ -33,6 +35,66 @@ const BLESSING_CATEGORIES = {
     lucky: {
         name: "Lucky",
         effects: ["luck", "speed"]
+    },
+    durability: {
+        name: "Durability",
+        effects: ["durability"]
+    },
+    aerodynamics: {
+        name: "Aerodynamics",
+        effects: ["aerodynamics"]
+    },
+    torque: {
+        name: "Torque",
+        effects: ["torque"]
+    },
+    horsepower: {
+        name: "Horsepower",
+        effects: ["horsepower"]
+    },
+    brakes: {
+        name: "Brakes",
+        effects: ["brakes"]
+    },
+    intuition: {
+        name: "Intuition",
+        effects: ["luck", "grip"]
+    },
+    speedDemon: {
+        name: "Speed Demon",
+        effects: ["speed", "horsepower"]
+    },
+    endurance: {
+        name: "Endurance",
+        effects: ["durability", "aerodynamics"]
+    },
+    precision: {
+        name: "Precision",
+        effects: ["brakes", "torque"]
+    },
+    accelerationGod: {
+        name: "Acceleration God",
+        effects: ["acceleration", "torque"]
+    },
+    gripMaster: {
+        name: "Grip Master",
+        effects: ["grip", "aerodynamics"]
+    },
+    fuelEconomy: {
+        name: "Fuel Economy",
+        effects: ["fuelEfficiency", "durability"]
+    },
+    luck: {
+        name: "Luck",
+        effects: ["luck"]
+    },
+    speedster: {
+        name: "Speedster",
+        effects: ["speed", "grip"]
+    },
+    horsepowerGod: {
+        name: "Horsepower God",
+        effects: ["horsepower", "torque"]
     }
 };
 
@@ -49,7 +111,7 @@ module.exports = {
         .setName('shrine')
         .setDescription('View and manage your player blessings.'),
     category: 'General',
-    async execute(interaction, client) {
+    async execute(interaction) {
     let logger = await getLogger();
         const profile = await Profile.findOne({ userId: interaction.user.id });
         if (!profile) {
@@ -68,7 +130,13 @@ module.exports = {
                     stats: {
                         speed: 0.0,
                         acceleration: 0.0,
-                        handling: 0.0,
+                        grip: 0.0,
+                        suspension: 0.0,
+                        brakes: 0.0,
+                        durability: 0.0,
+                        aerodynamics: 0.0,
+                        torque: 0.0,
+                        horsepower: 0.0,
                         luck: 0.0,
                         fuelEfficiency: 0.0
                     }
@@ -81,7 +149,13 @@ module.exports = {
                     stats: {
                         speed: 0.0,
                         acceleration: 0.0,
-                        handling: 0.0,
+                        grip: 0.0,
+                        suspension: 0.0,
+                        brakes: 0.0,
+                        durability: 0.0,
+                        aerodynamics: 0.0,
+                        torque: 0.0,
+                        horsepower: 0.0,
                         luck: 0.0,
                         fuelEfficiency: 0.0
                     }
@@ -94,7 +168,13 @@ module.exports = {
                     stats: {
                         speed: 0.0,
                         acceleration: 0.0,
-                        handling: 0.0,
+                        grip: 0.0,
+                        suspension: 0.0,
+                        brakes: 0.0,
+                        durability: 0.0,
+                        aerodynamics: 0.0,
+                        torque: 0.0,
+                        horsepower: 0.0,
                         luck: 0.0,
                         fuelEfficiency: 0.0
                     }
@@ -107,7 +187,13 @@ module.exports = {
                     stats: {
                         speed: 0.0,
                         acceleration: 0.0,
-                        handling: 0.0,
+                        grip: 0.0,
+                        suspension: 0.0,
+                        brakes: 0.0,
+                        durability: 0.0,
+                        aerodynamics: 0.0,
+                        torque: 0.0,
+                        horsepower: 0.0,
                         luck: 0.0,
                         fuelEfficiency: 0.0
                     }
@@ -120,7 +206,13 @@ module.exports = {
                     stats: {
                         speed: 0.0,
                         acceleration: 0.0,
-                        handling: 0.0,
+                        grip: 0.0,
+                        suspension: 0.0,
+                        brakes: 0.0,
+                        durability: 0.0,
+                        aerodynamics: 0.0,
+                        torque: 0.0,
+                        horsepower: 0.0,
                         luck: 0.0,
                         fuelEfficiency: 0.0
                     }

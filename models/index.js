@@ -5,6 +5,7 @@ const Item = require('./Items');
 const Job = require('./Jobs');
 const BotSetting = require('./Settings');
 const Crew = require('./Crews');
+const Vehicle = require('./Vehicles');
 
 module.exports = {
     Challenge,
@@ -13,5 +14,6 @@ module.exports = {
     Item,
     Job,
     Profile,
-    BotSetting
+    BotSetting,
+    Vehicle
 };

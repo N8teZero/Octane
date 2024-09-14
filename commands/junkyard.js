@@ -82,9 +82,9 @@ module.exports = {
         
     }
 };
-
+// "Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes", "Nitrous", "Weight Reduction", "Aero", "Engine", "Transmission"
 async function generateLoot() {
-    const parts = ["Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes"];
+    const parts = ["Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes", "Nitrous", "Weight Reduction", "Aero", "Engine", "Transmission"];
     const conditions = ["Worn", "Broken", "Damaged", "Usable"];
     const conditionProbability = [0.5, 0.3, 0.2, 0.01];
 
@@ -101,7 +101,7 @@ async function generateLoot() {
 }
 
 function calculatePartValue(part, condition) {
-    const baseValue = { "Turbo": 800, "Supercharger": 600, "Suspension": 450, "Coilovers": 300, "Exhaust": 300, "Intake": 150, "Intercooler": 400, "Wheels": 200, "Tires": 150, "Brakes": 150 };
+    const baseValue = { "Turbo": 800, "Supercharger": 600, "Suspension": 450, "Coilovers": 300, "Exhaust": 300, "Intake": 150, "Intercooler": 400, "Wheels": 200, "Tires": 150, "Brakes": 150, "Nitrous": 500, "Weight Reduction": 200, "Aero": 300, "Engine": 1000, "Transmission": 500 };
     const conditionModifier = { "Worn": 0.05, "Broken": 0.1, "Damaged": 0.25, "Usable": 1 };
     return Math.round(baseValue[part] * conditionModifier[condition]);
 }

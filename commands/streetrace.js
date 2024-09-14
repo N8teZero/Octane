@@ -1,8 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
 const { DateTime } = require('luxon');
-const { Profile } = require('../models');
+const { Profile, Vehicle } = require('../models');
 const { giveXP, giveCoins, giveItem, updateChallenge, generateVehiclestats } = require('../utils/main');
-const { aiRaces } = require('../data/vehicles');
 const { getLogger } = require('../utils/logging');
 const { updateBooster } = require('../utils/main');
 const sharp = require('sharp');
@@ -17,7 +16,7 @@ module.exports = {
         if (!profile) {
             return interaction.reply('You need a profile to participate in street races.', { ephemeral: true });
         }
-        const aiVehicles = aiRaces.filter(car => car.enabled);
+        const aiVehicles = Vehicle.filter(car => car.isActive);
         //logger.debug(`Race AI: ${JSON.stringify(aiVehicles)}`);
         const logger = await getLogger();
         if (aiVehicles.length === 0) {
@@ -40,8 +39,8 @@ module.exports = {
             return interaction.reply({ content: 'Not enough fuel to race, use `/refuel` to top off.', ephemeral: true });
         }
 
-        const aiVehicleCurrent = aiVehicles.find(v => v.level === profile.streetRaceStats.highestLevelUnlocked);
-        const aiVehicleNext = aiVehicles.find(v => v.level === profile.streetRaceStats.highestLevelUnlocked + 1) || aiVehicleCurrent;
+        const aiVehicleCurrent = aiVehicles.find(v => v.id === profile.streetRaceStats.highestLevelUnlocked);
+        const aiVehicleNext = aiVehicles.find(v => v.id === profile.streetRaceStats.highestLevelUnlocked + 1) || aiVehicleCurrent;
         const resizedBuffer = await sharp(playerVehicle.image)
             .resize(128, 128)
             .toBuffer();
@@ -138,10 +137,10 @@ module.exports = {
 };
 
 async function simulateRace(profile, aiVehicle) {
-    const vehicleStats = await generateVehiclestats(profile);
+    const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
 
     const playerTotal = vehicleStats.totalPower + (profile.level * 2);
-    const aiTotal = aiVehicle.stats.speed + aiVehicle.stats.acceleration + aiVehicle.stats.handling;
+    const aiTotal = aiVehicle.stats.speed + aiVehicle.stats.acceleration + aiVehicle.stats.grip + aiVehicle.stats.suspension + aiVehicle.stats.brakes + aiVehicle.stats.horsepower + aiVehicle.stats.torque + aiVehicle.stats.aerodynamics;
 
     const odds = playerTotal / (playerTotal + aiTotal);
     const rng = Math.random();

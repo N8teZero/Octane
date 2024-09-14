@@ -278,8 +278,8 @@ const resetLuckyTokens = async (profile) => {
 }
 
 const calculatePlayerScore = async (profile) => {
-    const playerVehicle = profile.vehicles.find(v => v.isActive);
-    let playerScore = Math.floor((playerVehicle.stats.speed * 0.2) + (playerVehicle.stats.acceleration * 0.15) + (playerVehicle.stats.handling * 0.1));
+    const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
+    let playerScore = Math.floor((vehicleStats.speed * 0.2) + (vehicleStats.acceleration * 0.15) + (vehicleStats.grip * 0.1) + (vehicleStats.suspension * 0.1) + (vehicleStats.brakes * 0.05));
     playerScore = playerScore < 1 ? 1 : playerScore;
     playerScore = Math.floor(playerScore * (profile.level * 0.1));
 
@@ -342,91 +342,252 @@ async function updateChallenge(user, type) {
 // Vehicle upgrades
 const calculateStatBonuses = async (vehicle) => {
 
-    if (!vehicle.upgrades || vehicle.upgrades.length === 0) return { speedBonus: 0, accelerationBonus: 0, handlingBonus: 0 };
+    if (!vehicle.upgrades || vehicle.upgrades.length === 0) return { speedBonus: 0, accelerationBonus: 0, gripBonus: 0, suspensionBonus: 0, brakesBonus: 0 };
     return vehicle.upgrades.reduce((acc, upgrade) => {
         acc.speedBonus += upgrade.stats.speed || 0;
         acc.accelerationBonus += upgrade.stats.acceleration || 0;
-        acc.handlingBonus += upgrade.stats.handling || 0;
+        acc.gripBonus += upgrade.stats.grip || 0;
+        acc.suspensionBonus += upgrade.stats.suspension || 0;
+        acc.brakesBonus += upgrade.stats.brakes || 0;
         return acc;
-    }, { speedBonus: 0, accelerationBonus: 0, handlingBonus: 0 });
+    }, { speedBonus: 0, accelerationBonus: 0, gripBonus: 0, suspensionBonus: 0, brakesBonus: 0 });
 }
 
-const generateVehiclestats = async (profile) => {
-    const vehicle = profile.vehicles.find(v => v.isActive);
+const generateVehiclestats = async (profile, vehicle) => {
     let logger = await getLogger();
     if (!vehicle) return null;
     const upgradeBonuses = await calculateStatBonuses(vehicle);
-    const speedBonus = upgradeBonuses.speedBonus + profile.stats.speed; 
-    const accelerationBonus = upgradeBonuses.accelerationBonus + profile.stats.acceleration;
-    const handlingBonus = upgradeBonuses.handlingBonus + profile.stats.handling;
-    const speedText = `S: ${vehicle.stats.speed} (+${speedBonus})`;
-    const accelerationText = `A: ${vehicle.stats.acceleration} (+${accelerationBonus})`;
-    const handlingText = `H: ${vehicle.stats.handling} (+${handlingBonus})`;
 
-    const speed = vehicle.stats.speed + speedBonus;
-    const acceleration = vehicle.stats.acceleration + accelerationBonus;
-    const handling = vehicle.stats.handling + handlingBonus;
+    const speedUpgrade = upgradeBonuses.speedBonus + profile.stats.speed; 
+    const accelUpgrade = upgradeBonuses.accelerationBonus + profile.stats.acceleration;
+    const gripUpgrade = upgradeBonuses.gripBonus + profile.stats.grip;
+    const suspensionUpgrade = upgradeBonuses.suspensionBonus + profile.stats.suspension;
+    const brakesUpgrade = upgradeBonuses.brakesBonus + profile.stats.brakes;
+    const torqueUpgrade = upgradeBonuses.torqueBonus + profile.stats.torque;
+    const horsepowerUpgrade = upgradeBonuses.horsepowerBonus + profile.stats.horsepower;
+    const aeroUpgrade = upgradeBonuses.aeroBonus + profile.stats.aerodynamics;
+    
+    const speedBonus = profile.stats.speed;
+    const accelBonus = profile.stats.acceleration;
+    const gripBonus = profile.stats.grip;
+    const suspensionBonus = profile.stats.suspension;
+    const brakesBonus = profile.stats.brakes;
+    const torqueBonus = profile.stats.torque;
+    const horsepowerBonus = profile.stats.horsepower;
+    const aeroBonus = profile.stats.aerodynamics;
+    
+    const speed = vehicle.stats.speed + speedBonus + speedUpgrade;
+    const acceleration = vehicle.stats.acceleration + accelBonus + accelUpgrade;
+    const grip = vehicle.stats.grip + gripBonus + gripUpgrade;
+    const suspension = vehicle.stats.suspension + suspensionBonus + suspensionUpgrade;
+    const brakes = vehicle.stats.brakes + brakesBonus + brakesUpgrade;
+    const torque = vehicle.stats.torque + torqueBonus;
+    const horsepower = vehicle.stats.horsepower + horsepowerBonus;
+    const aero = vehicle.stats.aerodynamics + aeroBonus;
 
-    const totalPower = speed + acceleration + handling;
+    const totalPower = (speed + acceleration + grip + suspension + brakes + aero) * (torque + horsepower);
 
-    logger.debug(`generateVehiclestats: ${vehicle.year} ${vehicle.make} ${vehicle.model} | S: ${totalPower} | A: ${accelerationBonus} | H: ${handlingBonus}`);
+    const speedText = `Speed: ${vehicle.stats.speed} (+${speedBonus + speedUpgrade})`;
+    const accelText = `Accel: ${vehicle.stats.acceleration} (+${accelBonus + accelUpgrade})`;
+    const gripText = `Grip: ${vehicle.stats.grip} (+${gripBonus + gripUpgrade})`;
+    const suspensionText = `Suspension: ${vehicle.stats.suspension} (+${suspensionBonus + suspensionUpgrade})`;
+    const brakesText = `Brakes: ${vehicle.stats.brakes} (+${brakesBonus + brakesUpgrade})`;
+    const torqueText = `Torque: ${vehicle.stats.torque} (+${torqueBonus})`;
+    const horsepowerText = `Horsepower: ${vehicle.stats.horsepower} (+${horsepowerBonus})`;
+    const aeroText = `Aerodynamics: ${vehicle.stats.aerodynamics} (+${aeroBonus})`;
 
-    return { totalPower, speedText, accelerationText, handlingText, speed, acceleration, handling };
+    logger.debug(`generateVehiclestats: ${vehicle.year} ${vehicle.make} ${vehicle.model} | Speed: ${speed} | Accel: ${acceleration} | Grip: ${grip} | Suspension: ${suspension} | Brakes: ${brakes}`);
+
+    return {
+        totalPower,
+        speedText,
+        accelText,
+        gripText,
+        suspensionText,
+        brakesText,
+        torqueText,
+        horsepowerText,
+        aeroText,
+        speed,
+        acceleration,
+        grip,
+        suspension,
+        brakes,
+        torque,
+        horsepower,
+        aero,
+        speedBonus,
+        accelBonus,
+        gripBonus,
+        suspensionBonus,
+        brakesBonus,
+        torqueBonus,
+        horsepowerBonus,
+        aeroBonus,
+        speedUpgrade,
+        accelUpgrade,
+        gripUpgrade,
+        suspensionUpgrade,
+        brakesUpgrade,
+        torqueUpgrade,
+        horsepowerUpgrade,
+        aeroUpgrade
+    };
 }
 
 // partBonuses
-// "Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes"
+// "Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes", "Nitrous", "Weight Reduction", "Aero", "Engine", "Transmission"
 const partBonuses = {
     turbo: {
         speed: 0.4,
         acceleration: 0.5,
-        handling: 0.0
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     supercharger: {
         speed: 0.7,
         acceleration: 0.3,
-        handling: 0.0
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     wheels: {
-        speed: 0.0,
+        speed: 0.1,
         acceleration: 0.0,
-        handling: 0.8
+        grip: 0.6,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     tires: {
         speed: 0.0,
         acceleration: 0.1,
-        handling: 0.7
+        grip: 0.8,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     brakes: {
         speed: 0.0,
         acceleration: 0.0,
-        handling: 0.6
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.9,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     suspension: {
         speed: 0.0,
         acceleration: 0.1,
-        handling: 0.7
+        grip: 0.0,
+        suspension: 0.8,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     exhaust: {
-        speed: 0.1,
+        speed: 0.2,
         acceleration: 0.1,
-        handling: 0.0
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     intake: {
         speed: 0.1,
         acceleration: 0.2,
-        handling: 0.0
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     intercooler: {
         speed: 0.1,
         acceleration: 0.0,
-        handling: 0.0
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
     },
     coilovers: {
         speed: 0.0,
         acceleration: 0.3,
-        handling: 0.5
-    }
+        grip: 0.0,
+        suspension: 0.7,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
+    },
+    nitrous: {
+        speed: 0.5,
+        acceleration: 0.5,
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.0
+    },
+    weightReduction: {
+        speed: 0.2,
+        acceleration: 0.3,
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 0.2
+    },
+    aero: {
+        speed: 0.0,
+        acceleration: 0.0,
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.0,
+        aero: 1.0
+    },
+    engine: {
+        speed: 0.0,
+        acceleration: 0.0,
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.5,
+        horsepower: 0.5,
+        aero: 0.0
+    },
+    transmission: {
+        speed: 0.0,
+        acceleration: 0.5,
+        grip: 0.0,
+        suspension: 0.0,
+        brakes: 0.0,
+        torque: 0.0,
+        horsepower: 0.5,
+        aero: 0.0
+    },
 }
 
 // Update player stats based on active blessings
