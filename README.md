@@ -1,9 +1,8 @@
 # Octane
- A street racing experience, within Discord. Buy and manage cars, race AI opponents, and more!
+An RPG street racing experience, within Discord. Buy and manage cars, race AI opponents, and more!
 
 ## Commands
-
-This Discord Racing Bot comes with the following commands:
+Octane comes with many commands, including the following:
 
 
 ### /start
@@ -15,8 +14,8 @@ Check player stats for yourself or other active players.
 ### /race
 Race against AI opponents to earn coins and XP.
 
-### /daily | /weekly | /lottery | /work | /afk
-Other ways to make coins on cool down. 
+### /cooldowns
+See all of the ways to earn rewards and when the cooldowns reset.
 
 ### /leaderboard
 Displays the current leaderboard with the top racers.
@@ -24,24 +23,34 @@ Displays the current leaderboard with the top racers.
 ### /help
 Provides information about the available commands.
 
-## Systems
 
-The Discord Racing Bot utilizes the following systems:
-
-
-### Player Customizable Profiles
-Players are able to customize their username shown, as well as colors and the background image for their generate profile image.
-
-### Passive Incomes
-Even when you aren't playing, you are earning! Use /afk to collect the AFK rewards.
-
-### Progressive Level and AI Races
-As you level up, you will be able to purchase better cars, upgrades, and challenge higher level AI. 
-
-### Leaderboard System
-Keeps track of the top racers and displays the leaderboard.
+## Links
+Top.gg - https://top.gg/bot/1261549898080452638
+Dev Server - https://discord.gg/yWEDMWd4AN
 
 ## Patch Notes
+## 2024-09-15 - 2.30.0
+### Blessings, Updated Vehicles Stats, and Much More!
+* Feast - New Command - Introducing a new idle minigame where players can use Coupons to start Supply Runs for the feast. Supply run time and rewards depend on the Coupon type. Once the supply run is complete, players collect the Feast Supplies to be used at the shrine.
+* Shrine - New Command - As part of the Feast minigame, the Shrine is where players can submit their Feast Supplies to the Car Gods for blessings. Blessings are player bound bonuses to various stats, meaning the stats apply to any vehicle. These stats include Luck, Fuel Efficiency, and more! Players can have up to 5 active blessings, but can lock and rotate them as they wish to get the stats they want. I'll expand on this further in the docs(Coming Soon)
+* Stats Model - Update - Previously, there were only 3 stats: Speed, Accel, and Handling. I've expanded on this to: Speed, Accel, Grip, Suspension, Brakes, Durability, Aerodynamics, Torque, Horsepower, Luck, and Fuel Efficiency. These new stats offer even more ways to modify a build, and customize the race experience. *Note: Fuel Efficiency integration coming soon, currently does nothing. I am creating a more robust race simulation that will take into consideration various stats, such as needing more Grip for rain races, or certain tracks favoring Torque/Accel/Brakes versus Speed/Horsepower
+* Art - I've partnered with a pixel artist and we've got vehicle images for all 3 starter vehicles! I will be adding more images as time and money allows
+* Stats - New Command - Added stats command to view player and vehicle related stats. These stats are specifically focused on things that effect odds across the different minigames
+* Dealer - Update - Using vehicles and vehicle data from new Vehicle Table; Added new stats to view
+* Garage - Update - Displays new stats model for vehicles(to be expanded on soon)
+* Index - Update - Added interaction handler for Lock/Unlock buttons on Shrine embed
+* Inventory - Update - Adjusted to only show items in the 'Parts' category
+* Junkyard - Update - Added new Junkyard items to incorporate the new stats. Adjusted probabilities of getting usable items to factor in Player Luck stat
+* Lottery - Update - Adjusted probabilities for better items to factor in Player Luck stat
+* Practice - Update - Updated practice command to use new stats model.
+* Profile - Update - Added visibilty of Coupons and Feast Supplies. (Icons in progress)
+* Start - Update - Updated to use vehicle table instead of static values, supports new stats model
+* Race - Update - AI Vehicles updates to use new stats model, and updated the level calculations to use ID. Soon I'll be balancing the stats to improve odds of winning against AI you have already beaten, and randomize which vehicles you encounter except for boss races.
+* Scrap - Update - Adjusted to only scrap items in the 'Parts' category
+* Upgrade - Update - Added new stats model to upgrades
+* Utils/Embed - New - Added cental embed function to reference across commands
+* Utils/Main - Update - Shrine functions added to calculate Shrine Level, Player Power calculates new stats, massive update to Vehicle Stats function, added Upgrade parts to parts list
+* Vehicle List - Update - Upgraded the file storage from static files to a dedicated vehicles table. This allows a lot more flexibility and reduces redundancy. With this centralized list of vehicles, we get AI Race Vehicles, Dealership Cars, Starter Cars, and a standardized location of all vehicle data (nerdge)
 ## 2024-08-29 - 2.28.0
 ### What didn't I touch?
 * Added /top command to see top guilds based on various stats. This will be expanded on more with a coming update

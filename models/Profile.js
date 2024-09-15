@@ -81,6 +81,7 @@ const blessingsSchema = new mongoose.Schema({
         aerodynamics: { type: Number, default: 0.0 },
         torque: { type: Number, default: 0.0 },
         horsepower: { type: Number, default: 0.0 },
+        durability: { type: Number, default: 0 },
         luck: { type: Number, default: 0.0 },
         fuelEfficiency: { type: Number, default: 0.0 }
     }
@@ -159,6 +160,7 @@ const profileSchema = new mongoose.Schema({
         aerodynamics: { type: Number, default: 0 },
         torque: { type: Number, default: 0 },
         horsepower: { type: Number, default: 0 },
+        durability: { type: Number, default: 0 },
         luck: { type: Number, default: 0 },
         fuelEfficiency: { type: Number, default: 0 }
     }
