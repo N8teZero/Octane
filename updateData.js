@@ -22,9 +22,9 @@ async function startup () {
         const logger = await getLogger();
 
         await resetDailies(logger);
-        //await updateProfileVehicleIds(logger);
-        //await updateAllPlayerVehicleStats(logger);
+        
         //await updateVehicleData(logger);
+        //await updateAllPlayerVehicleStats(logger);
 
     } catch (err) {
         console.error('Database connection error:', err);
@@ -115,7 +115,7 @@ async function updateAllPlayerVehicleStats(logger) {
         for (let profile of profiles) {
             for (let vehicleEntry of profile.vehicles) {
                 // Get the vehicle document from the Vehicle model matching the year, make, and model of the vehicle in the profile
-                const vehicle = await Vehicle.findById({year: vehicleEntry.year, make: vehicleEntry.make, model: vehicleEntry.model});
+                const vehicle = await Vehicle.findById({ _id: vehicleEntry.vehicleId });
                 if (!vehicle) {
                     logger.error(`Vehicle not found for profile: ${profile.userId} | ${vehicleEntry.year} ${vehicleEntry.make} ${vehicleEntry.model}`);
                     continue;
@@ -123,7 +123,6 @@ async function updateAllPlayerVehicleStats(logger) {
 
                 // Update the vehicle stats in the profile based on the stats in the Vehicle document
                 vehicleEntry.stats = vehicle.stats;
-                vehicleEntry.vehicleId = vehicle._id;
             }
 
             // Save the updated profile
@@ -191,8 +190,8 @@ async function updateVehicleData(logger) {
     try {
         const vehicles = await Vehicle.find({});
         for (let vehicle of vehicles) {
-            if (!vehicle.forSale) {
-                vehicle.forSale = true;
+            if (!vehicle.stats) {
+                vehicle.stats.fuelCapacity = 100;
             }
             await vehicle.save();
         }

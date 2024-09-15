@@ -148,8 +148,9 @@ async function getDealerEmbed(interaction, forSaleCars, pageIndex) {
                     .setDisabled(pageIndex === forSaleCars.length - 1),
                 new ButtonBuilder()
                     .setCustomId('buy')
-                    .setLabel('buy')
+                    .setLabel('Buy')
                     .setStyle(ButtonStyle.Success)
+                    .setDisabled(!forSaleCars[pageIndex].forSale)
             );
     
     return { embed, row, vehicleImage };
