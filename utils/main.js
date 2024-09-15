@@ -279,7 +279,9 @@ const resetLuckyTokens = async (profile) => {
 
 const calculatePlayerScore = async (profile) => {
     const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
-    let playerScore = Math.floor(vehicleStats.totalPower);
+    let playerScore = Math.floor(vehicleStats.playerPower);
+
+    console.log(`Player Score: ${playerScore} | ${vehicleStats.playerPower} | ${vehicleStats.totalPower}`);
 
     return playerScore;
 }
@@ -383,7 +385,8 @@ const generateVehiclestats = async (profile, vehicle) => {
     const horsepower = vehicle.stats.horsepower + horsepowerBonus;
     const aero = vehicle.stats.aerodynamics + aeroBonus;
 
-    const totalPower = (speed + acceleration + grip + suspension + brakes + aero) * (torque + horsepower);
+    const totalPower = (speed + acceleration + grip + suspension + brakes + aero) * ((torque + horsepower) || 1);
+    const playerPower = totalPower * profile.level;
 
     const speedText = `Speed: ${vehicle.stats.speed} (+${speedBonus + speedUpgrade})`;
     const accelText = `Accel: ${vehicle.stats.acceleration} (+${accelBonus + accelUpgrade})`;
@@ -394,7 +397,7 @@ const generateVehiclestats = async (profile, vehicle) => {
     const horsepowerText = `Horsepower: ${vehicle.stats.horsepower} (+${horsepowerBonus})`;
     const aeroText = `Aerodynamics: ${vehicle.stats.aerodynamics} (+${aeroBonus})`;
 
-    logger.debug(`generateVehiclestats: ${vehicle.year} ${vehicle.make} ${vehicle.model} | Speed: ${speed} | Accel: ${acceleration} | Grip: ${grip} | Suspension: ${suspension} | Brakes: ${brakes}`);
+    logger.debug(`generateVehiclestats: ${vehicle.year} ${vehicle.make} ${vehicle.model} | Total Power: ${totalPower} | Speed: ${speed} | Accel: ${acceleration} | Grip: ${grip} | Suspension: ${suspension} | Brakes: ${brakes} | Torque: ${torque} | Horsepower: ${horsepower} | Aero: ${aero} | Player Power: ${playerPower}`);
 
     return {
         totalPower,
@@ -429,7 +432,8 @@ const generateVehiclestats = async (profile, vehicle) => {
         brakesUpgrade,
         torqueUpgrade,
         horsepowerUpgrade,
-        aeroUpgrade
+        aeroUpgrade,
+        playerPower
     };
 }
 
