@@ -24,19 +24,6 @@ module.exports = {
             return;
         }
 
-        // speed: Number,
-        // acceleration: Number,
-        // grip: Number,
-        // suspension: Number,
-        // brakes: Number,
-        // fuelCapacity: Number,
-        // currentFuel: Number,
-        // durability: Number,
-        // aerodynamics: Number,
-        // torque: Number,
-        // horsepower: Number
-
-
         let pageIndex = 0;
         const vehicleImage = new AttachmentBuilder(forSaleCars[pageIndex].image, { name: 'vehicle.png' });
         let embed = new EmbedBuilder()
@@ -98,7 +85,7 @@ module.exports = {
                         return;
                     }
 
-                    if (profile.vehicles.find(v => v.make === car.make && v.model === car.model)) {
+                    if (profile.vehicles.find(v => v.vehicleId === car._id)) {
                         await interaction.editReply({ content: `You already own the ${car.make} ${car.model}.`, ephemeral: true });
                         return;
                     }
@@ -123,15 +110,15 @@ module.exports = {
                 .setImage('attachment://vehicle.png')
                 .addFields(
                     { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: false },
-                { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: false },
-                { name: 'Grip', value: `${forSaleCars[pageIndex].stats.grip}`, inline: false },
-                { name: 'Suspension', value: `${forSaleCars[pageIndex].stats.suspension}`, inline: false },
-                { name: 'Brakes', value: `${forSaleCars[pageIndex].stats.brakes}`, inline: false },
-                { name: 'Durability', value: `${forSaleCars[pageIndex].stats.durability}`, inline: false },
-                { name: 'Aerodynamics', value: `${forSaleCars[pageIndex].stats.aerodynamics}`, inline: false },
-                { name: 'Torque', value: `${forSaleCars[pageIndex].stats.torque}`, inline: false },
-                { name: 'Horsepower', value: `${forSaleCars[pageIndex].stats.horsepower}`, inline: false },
-                { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: false }
+                    { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: false },
+                    { name: 'Grip', value: `${forSaleCars[pageIndex].stats.grip}`, inline: false },
+                    { name: 'Suspension', value: `${forSaleCars[pageIndex].stats.suspension}`, inline: false },
+                    { name: 'Brakes', value: `${forSaleCars[pageIndex].stats.brakes}`, inline: false },
+                    { name: 'Durability', value: `${forSaleCars[pageIndex].stats.durability}`, inline: false },
+                    { name: 'Aerodynamics', value: `${forSaleCars[pageIndex].stats.aerodynamics}`, inline: false },
+                    { name: 'Torque', value: `${forSaleCars[pageIndex].stats.torque}`, inline: false },
+                    { name: 'Horsepower', value: `${forSaleCars[pageIndex].stats.horsepower}`, inline: false },
+                    { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: false }
                 )
                 .setFooter({ text: `Page ${pageIndex + 1} of ${forSaleCars.length}` });
             
