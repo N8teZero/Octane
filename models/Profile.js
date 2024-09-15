@@ -18,6 +18,8 @@ const upgradeSchema = new mongoose.Schema({
 });
 
 const vehicleSchema = new mongoose.Schema({
+    vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle' },
+    purchasedDate: { type: Date, default: () => DateTime.now().setZone('America/New_York').toJSDate() },
     year: {type: Number },
     make: { type: String },
     model: { type: String },
