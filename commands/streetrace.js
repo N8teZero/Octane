@@ -16,7 +16,7 @@ module.exports = {
         if (!profile) {
             return interaction.reply('You need a profile to participate in street races.', { ephemeral: true });
         }
-        const aiVehicles = Vehicle.filter(car => car.isActive);
+        const aiVehicles = await Vehicle.find({ isActive: true });
         //logger.debug(`Race AI: ${JSON.stringify(aiVehicles)}`);
         const logger = await getLogger();
         if (aiVehicles.length === 0) {
@@ -51,8 +51,8 @@ module.exports = {
             .setTitle('Street Race Challenge')
             .setDescription('Choose your race level. Racing will consume 25% of fuel\nYou can use `/refuel` to get more')
             .addFields(
-                { name: 'Current Level - ' + aiVehicleCurrent.level, value: `${aiVehicleCurrent.make} ${aiVehicleCurrent.model}`, inline: true },
-                { name: 'Next Level - ' + aiVehicleNext.level, value: `${aiVehicleNext.make} ${aiVehicleNext.model}`, inline: true },
+                { name: 'Current Level - ' + aiVehicleCurrent.id, value: `${aiVehicleCurrent.make} ${aiVehicleCurrent.model}`, inline: true },
+                { name: 'Next Level - ' + aiVehicleNext.id, value: `${aiVehicleNext.make} ${aiVehicleNext.model}`, inline: true },
                 { name: 'Your Vehicle', value: `${playerVehicle.make} ${playerVehicle.model}`, inline: false }
             )
             .setImage('attachment://vehicle.png')
@@ -137,6 +137,7 @@ module.exports = {
 };
 
 async function simulateRace(profile, aiVehicle) {
+    let logger = await getLogger();
     const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
 
     const playerTotal = vehicleStats.totalPower + (profile.level * 2);
@@ -146,7 +147,7 @@ async function simulateRace(profile, aiVehicle) {
     const rng = Math.random();
     const result = rng < odds;
 
-    //logger.debug(`Odds: ${odds}, RNG: ${rng}, Result: ${result}`);
+    logger.debug(`simulateRace: ${profile.username} | Player: ${playerTotal} | AI: ${aiTotal} | Odds: ${odds} | RNG: ${rng} | Result: ${result}`);
     return result;   
 }
 
