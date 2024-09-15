@@ -17,10 +17,8 @@ module.exports = {
             return;
         }
 
-        //const forSaleCars = await Vehicle.filter(v => v.level <= profile.level && v.forsale);
-        //const forSaleCars = await Vehicle.find({ forsale: true }).sort({ id: 1 }).lean();
-        //const forSaleCars = Vehicles.filter(v => v.level <= profile.level && v.price <= profile.coins && v.forsale);
-        const forSaleCars = await Vehicle.find({ forSale: true }).sort({ id: 1 }).lean();
+        //const forSaleCars = await Vehicle.find({ forSale: true }).sort({ id: 1 }).lean();
+        const forSaleCars = await Vehicle.find({}).sort({ id: 1 }).lean();
         if (forSaleCars.length === 0) {
             await interaction.reply('No cars available for sale that you can afford.');
             return;

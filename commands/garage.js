@@ -44,7 +44,7 @@ module.exports = {
     
         await interaction.reply({ embeds: [embed], components: [row] });
 
-        const filter = i => i.user.id === interaction.user.id;
+        const filter = i => i.user.id === interaction.user.id && i.customId.startsWith('select_vehicle');
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
     
         collector.on('collect', async i => {
