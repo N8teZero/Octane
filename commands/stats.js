@@ -33,7 +33,7 @@ module.exports = {
             const crewTag = profile.crew ? '\u200B\u200B\u200B['+profile.crew+']' : '';
             const levelInfo = await calculateLevel(profile.xp);
             const playerPower = await calculatePlayerScore(profile);
-            const vehicleStats = await generateVehiclestats(profile, playerVehicle); // continue this later; adding vehicle stats and upgrades
+            const vehicleStats = await generateVehiclestats(profile, playerVehicle);
             await updateChallenge(profile, 'checkStats');
             
             
