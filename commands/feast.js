@@ -55,10 +55,15 @@ module.exports = {
                     run.state = 'In Progress';
                     run.startTime = DateTime.now().setZone('America/New_York').toJSDate();
                     run.couponType = i.customId;
+                    if (profile.supplyCouponT1 === 0 && i.customId === 't1') {
+                        return i.editReply({ content: 'You do not have any normal coupons.', ephemeral: true });
+                    } else if (profile.supplyCouponT2 === 0 && i.customId === 't2') {
+                        return i.editReply({ content: 'You do not have any premium coupons.', ephemeral: true });
+                    }
                     if (i.customId === 't1') {
-                        run.endTime = DateTime.now().setZone('America/New_York').plus({ minutes: 5 }).toJSDate(); // 1hr
+                        run.endTime = DateTime.now().setZone('America/New_York').plus({ minutes: 60 }).toJSDate(); // 1hr
                     } else if (i.customId === 't2') {
-                        run.endTime = DateTime.now().setZone('America/New_York').plus({ minutes: 10 }).toJSDate(); // 1.5 hrs
+                        run.endTime = DateTime.now().setZone('America/New_York').plus({ minutes: 90 }).toJSDate(); // 1.5 hrs
                     }
                     profile.supplyCouponT1 -= i.customId === 't1' ? 1 : 0;
                     profile.supplyCouponT2 -= i.customId === 't2' ? 1 : 0;
@@ -134,7 +139,7 @@ async function generateEmbed(profile) {
     const embed = new EmbedBuilder()
         .setColor(0x00AE86)
         .setTitle(`Feast Supplies: ${profile.feastSupplies}`)
-        .setDescription(`**Coupons:**\nT1: ${[profile.supplyCouponT1]}\nT2: ${[profile.supplyCouponT2]}\n\nChoose a coupon to start a supply run:\n`);
+        .setDescription(`**Coupons:**\nNormal: ${[profile.supplyCouponT1]}\nPremium: ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
 
     now = DateTime.now().setZone('America/New_York').toJSDate()
     for (let i = 0; i < profile.supplyRuns.length; i++) {
@@ -176,7 +181,7 @@ async function generateEmbed(profile) {
     if (profile.supplyCouponT1 > 0) {
         const tier1Button = new ButtonBuilder()
             .setCustomId('t1')
-            .setLabel('Tier 1')
+            .setLabel('Normal')
             .setStyle(ButtonStyle.Primary)
             .setDisabled(!profile.supplyRuns.some(run => run.state === 'Available'));
         rows[0].addComponents(tier1Button);
@@ -184,7 +189,7 @@ async function generateEmbed(profile) {
     if (profile.supplyCouponT2 > 0) {
         const tier2Button = new ButtonBuilder()
             .setCustomId('t2')
-            .setLabel('Tier 2')
+            .setLabel('Premium')
             .setStyle(ButtonStyle.Primary)
             .setDisabled(!profile.supplyRuns.some(run => run.state === 'Available'));
         rows[0].addComponents(tier2Button);
