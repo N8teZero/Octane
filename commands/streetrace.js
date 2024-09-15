@@ -42,7 +42,7 @@ module.exports = {
         const aiVehicleCurrent = aiVehicles.find(v => v.id === profile.streetRaceStats.highestLevelUnlocked);
         const aiVehicleNext = aiVehicles.find(v => v.id === profile.streetRaceStats.highestLevelUnlocked + 1) || aiVehicleCurrent;
         const resizedBuffer = await sharp(playerVehicle.image)
-            .resize(128, 128)
+            .resize(180, 180)
             .toBuffer();
 
         const attachment = new AttachmentBuilder(resizedBuffer, { name: 'vehicle.png' });
@@ -71,8 +71,9 @@ module.exports = {
             );
 
         await interaction.reply({ embeds: [embed], components: [row], files: [attachment] });
+        const filter = i => i.user.id === interaction.user.id && (i.customId === 'race_current_level' || i.customId === 'race_next_level');
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
-        const collector = interaction.channel.createMessageComponentCollector({ time: 60000 });
         collector.on('collect', async i => {
             if (!['race_current_level', 'race_next_level'].includes(i.customId)) return;
             await i.deferUpdate().catch(console.error);
@@ -81,7 +82,7 @@ module.exports = {
             const aiVehicle = isNextLevel ? aiVehicleNext : aiVehicleCurrent;
             try {
                 const result = await simulateRace(profile, aiVehicle);
-                const { xpEarned, coinsEarned } = await calculateStreetRacingReward(profile, i.customId === 'race_next_level' ? aiVehicleNext.level : aiVehicleCurrent.level);
+                const { xpEarned, coinsEarned } = await calculateStreetRacingReward(profile, i.customId === 'race_next_level' ? aiVehicleNext.id : aiVehicleCurrent.id);
                 //logger.debug(`Race rewards: ${xpEarned} XP, ${coinsEarned} coins`); 
                 setTimeout(async () => {
                     let rewardsMessage = 'Well, you didn\'t lose your car at least.';
@@ -154,16 +155,15 @@ async function simulateRace(profile, aiVehicle) {
 const calculateStreetRacingReward = async (profile, aiLevel) => {
     let logger = await getLogger();
     await updateBooster(profile);
-    const prof = await Profile.findOne({ userId: profile.userId, guildId: profile.guildId });
-    const xpBooster = prof.booster.xp || 1.0;
-    const coinsBooster = prof.booster.coins || 1.0;
+    const xpBooster = profile.booster.xp || 1.0;
+    const coinsBooster = profile.booster.coins || 1.0;
 
     const minCoins = aiLevel * 200;
     const maxCoins = aiLevel * 350;
     const coinsEarned = Math.floor((Math.random() * (maxCoins - minCoins + 1) + minCoins) * coinsBooster);
     const xpEarned = Math.floor(((Math.random() * (200 - 100 + 1) + 100) * xpBooster) * aiLevel);
 
-    //logger.debug(`Player: ${profile.userId}, minCoins: ${minCoins}, maxCoins: ${maxCoins}, coinsEarned: ${coinsEarned}, xpEarned: ${xpEarned} for AI level ${aiLevel}`);
+    logger.debug(`Player: ${profile.userId}, minCoins: ${minCoins}, maxCoins: ${maxCoins}, coinsEarned: ${coinsEarned}, xpEarned: ${xpEarned} for AI level ${aiLevel}`);
 
     return { minCoins, maxCoins, coinsEarned, xpEarned };
 };
