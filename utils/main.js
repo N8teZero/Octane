@@ -279,9 +279,7 @@ const resetLuckyTokens = async (profile) => {
 
 const calculatePlayerScore = async (profile) => {
     const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
-    let playerScore = Math.floor((vehicleStats.speed * 0.2) + (vehicleStats.acceleration * 0.15) + (vehicleStats.grip * 0.1) + (vehicleStats.suspension * 0.1) + (vehicleStats.brakes * 0.05));
-    playerScore = playerScore < 1 ? 1 : playerScore;
-    playerScore = Math.floor(playerScore * (profile.level * 0.1));
+    let playerScore = Math.floor(vehicleStats.totalPower);
 
     return playerScore;
 }

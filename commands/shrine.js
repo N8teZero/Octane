@@ -242,7 +242,7 @@ module.exports = {
                     openBlessing.stats = blessing.stats;
                     openBlessing.level = blessing.level;
                     openBlessing.lastUpdated = DateTime.now().setZone('America/New_York').toJSDate();
-                    //profile.feastSupplies -= 100;
+                    profile.feastSupplies -= 100;
                     profile.shrineXP += 5;
                     await profile.save();
 

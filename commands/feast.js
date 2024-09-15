@@ -75,7 +75,18 @@ module.exports = {
                     }
 
                     let totalRewards = 0;
+                    let bonusRewards = 0;
+                    // Use player luck stat to determine propability of receiving tier 2 coupons
+                    let luck = profile.luck;
                     runs.forEach(async (run) => {
+                        let chance = Math.floor(Math.random() * 100);
+                        if (luck > 0) {
+                            chance -= luck;
+                        }
+                        if (chance <= 10) {
+                            profile.supplyCouponT2 += 1;
+                            bonusRewards += 1;
+                        }
                         rewards = await supplyRewards(run.couponType);
                         profile.feastSupplies += rewards;
                         profile.lastFeastRun = DateTime.now().setZone('America/New_York').toJSDate();
@@ -84,9 +95,11 @@ module.exports = {
                         run.couponType = null;
                     });
                     await profile.save();
+
+                    const rewardsMessage = bonusRewards > 0 ? `You collected ${totalRewards}x Feast Supplies and received ${bonusRewards}x Tier 2 Coupons.` : `You collected ${totalRewards}x Feast Supplies.`;
                     
                     e = await generateEmbed(profile);
-                    await i.update({ content: `You collected ${totalRewards}x Feast Supplies.`, embeds: [e.embed], components: e.rows, fetchReply: true });
+                    await i.update({ content: `${rewardsMessage}`, embeds: [e.embed], components: e.rows, fetchReply: true });
                 }
                 return;
             });

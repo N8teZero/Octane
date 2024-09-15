@@ -26,7 +26,7 @@ module.exports = {
 
         let allLoot = [];        
         for (let i = 0; i < count; i++) {
-            allLoot = allLoot.concat(await generateLoot());
+            allLoot = allLoot.concat(await generateLoot(profile));
         }
         
         const lootAggregate = allLoot.reduce((acc, item) => {
@@ -83,10 +83,15 @@ module.exports = {
     }
 };
 // "Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes", "Nitrous", "Weight Reduction", "Aero", "Engine", "Transmission"
-async function generateLoot() {
+async function generateLoot(profile) {
     const parts = ["Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes", "Nitrous", "Weight Reduction", "Aero", "Engine", "Transmission"];
     const conditions = ["Worn", "Broken", "Damaged", "Usable"];
-    const conditionProbability = [0.5, 0.3, 0.2, 0.01];
+    let conditionProbability = [0.5, 0.3, 0.2, 0.01];
+    if (profile.stats.luck > 0) {
+        conditionProbability[3] += profile.stats.luck * 0.10;
+    }
+
+    console.log(`Luck: ${profile.stats.luck}, Condition Probability: ${conditionProbability}`);
 
     let loot = [];
     for (let i = 0; i < 5; i++) {

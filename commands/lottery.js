@@ -24,8 +24,8 @@ const prizes = [
 ];
 
 
-async function calculateLotteryReward() {
-    const rand = Math.random() * 50;
+async function calculateLotteryReward(profile) {
+    const rand = (Math.random() * 50) + (profile.stats.luck || 0);
     let sum = 0;
     for (const prize of prizes) {
         sum += prize.probability;
@@ -106,7 +106,7 @@ async function drawLottery(profile, count, interaction, client) {
     let logger = await getLogger();
     let results = [];
     for (let i = 0; i < count; i++) {
-        const prize = await calculateLotteryReward();
+        const prize = await calculateLotteryReward(profile);
         if (!prize) {
             logger.error(interaction.user.tag+' | lottery: No prize could be calculated.');
             continue;
