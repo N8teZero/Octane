@@ -42,7 +42,8 @@ module.exports = {
         );
 
         const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
-        const collector = message.createMessageComponentCollector({ time: 60000 });
+        const filter = i => i.user.id === interaction.user.id && (i.customId === 'previous' || i.customId === 'next' || i.customId === 'daily' || i.customId === 'starter');
+        const collector = message.createMessageComponentCollector({ filter, time: 60000 });
 
         function generateButtons(page, challenges) {
             return new ActionRowBuilder()

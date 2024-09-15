@@ -77,7 +77,8 @@ module.exports = {
         );
 
         const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
-        const collector = message.createMessageComponentCollector({ time: 60000 });
+        const filter = i => i.user.id === interaction.user.id && (i.customId === 'one' || i.customId === 'five' || i.customId === 'ten');
+        const collector = message.createMessageComponentCollector({ filter, time: 60000 });
         let results = [];
 
         collector.on('collect', async i => {

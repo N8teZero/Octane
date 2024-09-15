@@ -384,7 +384,7 @@ async function disbandCrew(interaction) {
     await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
 
     const filter = i => i.customId === 'confirmDisband' && i.user.id === interaction.user.id;
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 20000 });
 
     collector.on('collect', async i => {
         if (i.customId === 'confirmDisband') {
