@@ -1,5 +1,8 @@
 const { DateTime } = require('luxon');
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
+const sharp = require('sharp');
+const { Profile, Vehicle } = require('../models');
+
 const { calculateShrineLevel } = require('./main');
 
 async function getShrineEmbed(profile) {
@@ -57,6 +60,103 @@ async function getShrineEmbed(profile) {
     return { embed, rows };
 }
 
+async function getStartEmbed(interaction, starterCars, pageIndex) {
+    const resizedBuffer = await sharp(starterCars[pageIndex].image)
+            .resize(180, 180)
+            .toBuffer();
+    const vehicleImage = new AttachmentBuilder(resizedBuffer, { name: 'vehicle.png' });
+    const embed = new EmbedBuilder()
+        .setColor('#00ff00')
+        .setTitle(`Choose a starting vehicle...`)
+        .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
+        .setDescription('They might not be the fastest, but they are free!')
+        .setImage('attachment://vehicle.png')
+        .addFields(
+            { name: 'Vehicle', value: `${starterCars[pageIndex].year} ${starterCars[pageIndex].make} ${starterCars[pageIndex].model}`, inline: false },
+            { name: 'Speed', value: `${starterCars[pageIndex].stats.speed}`, inline: true },
+            { name: 'Acceleration', value: `${starterCars[pageIndex].stats.acceleration}`, inline: true },
+            { name: 'Grip', value: `${starterCars[pageIndex].stats.grip}`, inline: true },
+            { name: 'Suspension', value: `${starterCars[pageIndex].stats.suspension}`, inline: true },
+            { name: 'Brakes', value: `${starterCars[pageIndex].stats.brakes}`, inline: true },
+            { name: 'Durability', value: `${starterCars[pageIndex].stats.durability}`, inline: true },
+            { name: 'Aerodynamics', value: `${starterCars[pageIndex].stats.aerodynamics}`, inline: true },
+            { name: 'Torque', value: `${starterCars[pageIndex].stats.torque}`, inline: true },
+            { name: 'Horsepower', value: `${starterCars[pageIndex].stats.horsepower}`, inline: true },
+            { name: 'Fuel Capacity', value: `${starterCars[pageIndex].stats.fuelCapacity}`, inline: true }
+        )
+        .setFooter({ text: `Page ${pageIndex + 1} of ${starterCars.length}` });
+
+    const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId('previous')
+                    .setLabel('Previous')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(pageIndex === 0),
+                new ButtonBuilder()
+                    .setCustomId('next')
+                    .setLabel('Next')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(pageIndex === starterCars.length - 1),
+                new ButtonBuilder()
+                    .setCustomId('select')
+                    .setLabel('Select')
+                    .setStyle(ButtonStyle.Success)
+            );
+    
+    return { embed, row, vehicleImage };
+}
+
+async function getDealerEmbed(interaction, forSaleCars, pageIndex) {
+    const profile = await Profile.findOne({ userId: interaction.user.id });
+    const resizedBuffer = await sharp(forSaleCars[pageIndex].image)
+            .resize(180, 180)
+            .toBuffer();
+    const vehicleImage = new AttachmentBuilder(resizedBuffer, { name: 'vehicle.png' });
+    const embed = new EmbedBuilder()
+        .setColor('#0099ff')
+        .setTitle(`Vehicle Dealership`)
+        .setDescription(`You have <:coins:1269411594685644800> ${profile.coins.toLocaleString()}\nPrice: <:coins:1269411594685644800> ${forSaleCars[pageIndex].price.toLocaleString()}`)
+        .setImage('attachment://vehicle.png')
+        .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
+        .addFields(
+            { name: 'Vehicle', value: `${forSaleCars[pageIndex].year} ${forSaleCars[pageIndex].make} ${forSaleCars[pageIndex].model}`, inline: false },
+            { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: true },
+            { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: true },
+            { name: 'Grip', value: `${forSaleCars[pageIndex].stats.grip}`, inline: true },
+            { name: 'Suspension', value: `${forSaleCars[pageIndex].stats.suspension}`, inline: true },
+            { name: 'Brakes', value: `${forSaleCars[pageIndex].stats.brakes}`, inline: true },
+            { name: 'Durability', value: `${forSaleCars[pageIndex].stats.durability}`, inline: true },
+            { name: 'Aerodynamics', value: `${forSaleCars[pageIndex].stats.aerodynamics}`, inline: true },
+            { name: 'Torque', value: `${forSaleCars[pageIndex].stats.torque}`, inline: true },
+            { name: 'Horsepower', value: `${forSaleCars[pageIndex].stats.horsepower}`, inline: true },
+            { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: true }
+        )
+        .setFooter({ text: `Page ${pageIndex + 1} of ${forSaleCars.length}` });
+
+    const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId('previous')
+                    .setLabel('Previous')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(pageIndex === 0),
+                new ButtonBuilder()
+                    .setCustomId('next')
+                    .setLabel('Next')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(pageIndex === forSaleCars.length - 1),
+                new ButtonBuilder()
+                    .setCustomId('buy')
+                    .setLabel('buy')
+                    .setStyle(ButtonStyle.Success)
+            );
+    
+    return { embed, row, vehicleImage };
+}
+
 module.exports = {
-    getShrineEmbed
+    getShrineEmbed,
+    getStartEmbed,
+    getDealerEmbed
 };

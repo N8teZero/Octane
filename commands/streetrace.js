@@ -140,7 +140,7 @@ async function simulateRace(profile, aiVehicle) {
     let logger = await getLogger();
     const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
 
-    const playerTotal = vehicleStats.totalPower + (profile.level * 2);
+    const playerTotal = vehicleStats.playerPower;
     const aiTotal = aiVehicle.stats.speed + aiVehicle.stats.acceleration + aiVehicle.stats.grip + aiVehicle.stats.suspension + aiVehicle.stats.brakes + aiVehicle.stats.horsepower + aiVehicle.stats.torque + aiVehicle.stats.aerodynamics;
 
     const odds = playerTotal / (playerTotal + aiTotal);

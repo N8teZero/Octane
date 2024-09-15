@@ -1,7 +1,7 @@
-const { SelectMenuBuilder } = require('@discordjs/builders');
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { getLogger } = require('../utils/logging');
 const { Profile, Vehicle } = require('../models');
+const { getStartEmbed } = require('../utils/getEmbed');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,93 +9,83 @@ module.exports = {
         .setDescription('Get started by choosing your first vehicle!'),
     category: 'Misc',
     async execute(interaction) {
-    let logger = await getLogger();
+        let logger = await getLogger();
         let profile = await Profile.findOne({ userId: interaction.user.id });
-        if (profile) {
+        if (profile && profile.userId !== '102688836454203392') {
             return interaction.reply({ content: 'You already have a profile.', ephemeral: true });
         }
 
-        const vehicleMenu = new SelectMenuBuilder()
-            .setCustomId('select-starter-vehicle')
-            .setPlaceholder('Select your starter vehicle')
-            .addOptions([
-                {
-                    label: 'Ford Fiesta',
-                    description: 'A compact and reliable car.',
-                    value: '0'
-                },
-                {
-                    label: 'Toyota Corolla',
-                    description: 'Perfect for new racers.',
-                    value: '1'
-                },
-                {
-                    label: 'Honda Civic',
-                    description: 'A durable and efficient vehicle.',
-                    value: '2'
+        const starterCars = await Vehicle.find({ isStarterCar: true }).sort({ id: 1 }).lean();
+        if (starterCars.length === 0) {
+            await interaction.reply('No starter vehicles found.', { ephemeral: true });
+            return;
+        }
+
+        try {
+            let pageIndex = 0;
+            let e = await getStartEmbed(interaction, starterCars, pageIndex);
+
+            const message = await interaction.reply({ content: 'Please select your starter vehicle:', embeds: [e.embed], components: [e.row], files: [e.vehicleImage], fetchReply: true });
+            const filter = i => ['previous', 'next', 'select'].includes(i.customId) && i.user.id === interaction.user.id;
+            const collector = message.createMessageComponentCollector({ filter, time: 60000 });
+
+            collector.on('collect', async i => {
+                await i.deferUpdate();
+
+                switch (i.customId) {
+                    case 'previous':
+                        pageIndex = Math.max(pageIndex - 1, 0);
+                        break;
+                    case 'next':
+                        pageIndex = Math.min(pageIndex + 1, starterCars.length - 1);
+                        break;
+                    case 'select':
+                        const vehicle = starterVehicles[pageIndex];
+                        try {
+                            if (!vehicle) {
+                                await i.update({ content: "Selected vehicle not found.", components: [] });
+                                return;
+                            }
+                            profile = await Profile.create({
+                                userId: interaction.user.id,
+                                guildId: interaction.guildId,
+                                username: interaction.user.username,
+                                vehicles: [{ vehicleId: vehicle._id, year: vehicle.year, make: vehicle.make, model: vehicle.model, isActive: true, stats: vehicle.stats, image: vehicle.image }]
+                            });
+                        } catch (error) {
+                            logger.error(interaction.user.tag+' | start: '+error);
+                            return i.update({ content: 'Failed to create profile.', components: [] });
+                        }            
+            
+                        embed = new EmbedBuilder()
+                            .setColor('#00ff00')
+                            .setTitle(`Welcome to Octane ${profile.username} Racing!`)
+                            .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
+                            .setDescription('Your profile has been successfully set up!')
+                            .addFields(
+                                { name: 'Free Vehicle', value: `You have received a free ${vehicle.make} ${vehicle.model}!` },
+                                { name: 'Get Started', value: 'Use `/race` to start racing immediately' },
+                                { name: 'Check Profile', value: 'Use `/profile` to view your profile and stats' },
+                                { name: 'Buy Vehicles', value: 'Use `/dealer` to buy new vehicles' },
+                                { name: 'Check Cooldowns', value: 'Use `/cooldowns` to view your cooldowns' }
+                            )
+                            .setFooter({ text: 'Type /help for a command list and more information' });
+                        await i.update({ content: '', embeds: [embed], components: [], files: [] });
+                        collector.stop();
+                        break;
                 }
-            ]);
 
-        const row = new ActionRowBuilder().addComponents(vehicleMenu);
-
-        let embed = new EmbedBuilder()
-                .setColor('#00ff00')
-                .setTitle(`Choose a starting vehicle...`)
-                .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
-                .setDescription('They might not be the fastest, but they are free!')
-                .setFooter({ text: 'Type /help for a command list and more information' })
-
-        const starterVehicles = Vehicle.find({ isStarterCar: true });
-        starterVehicles.forEach(vehicle => {
-            embed.addFields({
-                name: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
-                value: `**Stats:**\nSpeed: ${vehicle.stats.speed}\nAcceleration: ${vehicle.stats.acceleration}\nGrip: ${vehicle.stats.grip}\nSuspension: ${vehicle.stats.suspension}\nBrakes: ${vehicle.stats.brakes}\nDurability: ${vehicle.stats.durability}\nAerodynamics: ${vehicle.stats.aerodynamics}\nTorque: ${vehicle.stats.torque}\nHorsepower: ${vehicle.stats.horsepower}`,
-                inline: true
+                let e = await getStartEmbed(interaction, starterCars, pageIndex);
+                await i.editReply({ embeds: [e.embed], components: [e.row], files: [e.vehicleImage], fetchReply: true });
             });
-        });
 
-        await interaction.reply({ content: 'Please select your starter vehicle:', embeds: [embed], components: [row] });
+            collector.on('end', () => {
+                interaction.editReply({ content: 'You did not select a vehicle, session ended.', components: [] });
+            });
 
-        const filter = i => i.customId === 'select-starter-vehicle' && i.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
-
-        collector.on('collect', async i => {
-            const selectedVehicle = parseInt(i.values[0], 10);
-            const vehicle = starterVehicles[selectedVehicle];
-            try {
-                if (!vehicle) {
-                    await i.update({ content: "Selected vehicle not found.", components: [] });
-                    return;
-                }
-                profile = await Profile.create({
-                    userId: interaction.user.id,
-                    guildId: interaction.guildId,
-                    username: interaction.user.username,
-                    vehicles: [{ year: vehicle.year, make: vehicle.make, model: vehicle.model, isActive: true, stats: vehicle.stats, image: vehicle.image }]
-                });
-            } catch (error) {
-                logger.error(interaction.user.tag+' | start: '+error);
-                return i.update({ content: 'Failed to create profile.', components: [] });
-            }            
-
-            embed = new EmbedBuilder()
-                .setColor('#00ff00')
-                .setTitle(`Welcome to Octane ${profile.username} Racing!`)
-                .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
-                .setDescription('Your profile has been successfully set up!')
-                .addFields(
-                    { name: 'Free Vehicle', value: `You have received a free ${vehicle.make} ${vehicle.model}!` },
-                    { name: 'Get Started', value: 'Use `/race` to start racing immediately' },
-                    { name: 'Check Profile', value: 'Use `/profile` to view your profile and stats' },
-                    { name: 'Buy Vehicles', value: 'Use `/shop` to buy new vehicles' }
-                )
-                .setFooter({ text: 'Type /help for a command list and more information' });
-            await i.update({ content: '', embeds: [embed], components: [] });
-        });
-
-        collector.on('end', collected => {
-            if (!collected.size)
-                interaction.editReply({ content: 'You did not select a vehicle.', components: [] });
-        });
+        } catch (error) {
+            logger.error(interaction.user.tag+' | start: '+error);
+            interaction.reply('An error occurred while setting up your profile.', { ephemeral: true });
+        }
     }
 };

@@ -281,7 +281,7 @@ const calculatePlayerScore = async (profile) => {
     const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
     let playerScore = Math.floor(vehicleStats.playerPower);
 
-    console.log(`Player Score: ${playerScore} | ${vehicleStats.playerPower} | ${vehicleStats.totalPower}`);
+    //console.log(`Player Score: ${playerScore} | ${vehicleStats.playerPower} | ${vehicleStats.totalPower}`);
 
     return playerScore;
 }
@@ -342,15 +342,18 @@ async function updateChallenge(user, type) {
 // Vehicle upgrades
 const calculateStatBonuses = async (vehicle) => {
 
-    if (!vehicle.upgrades || vehicle.upgrades.length === 0) return { speedBonus: 0, accelerationBonus: 0, gripBonus: 0, suspensionBonus: 0, brakesBonus: 0 };
+    if (!vehicle.upgrades || vehicle.upgrades.length === 0) return { speedBonus: 0, accelerationBonus: 0, gripBonus: 0, suspensionBonus: 0, brakesBonus: 0, torqueBonus: 0, horsepowerBonus: 0, aeroBonus: 0 };
     return vehicle.upgrades.reduce((acc, upgrade) => {
         acc.speedBonus += upgrade.stats.speed || 0;
         acc.accelerationBonus += upgrade.stats.acceleration || 0;
         acc.gripBonus += upgrade.stats.grip || 0;
         acc.suspensionBonus += upgrade.stats.suspension || 0;
         acc.brakesBonus += upgrade.stats.brakes || 0;
+        acc.torqueBonus += upgrade.stats.torque || 0;
+        acc.horsepowerBonus += upgrade.stats.horsepower || 0;
+        acc.aeroBonus += upgrade.stats.aerodynamics || 0;
         return acc;
-    }, { speedBonus: 0, accelerationBonus: 0, gripBonus: 0, suspensionBonus: 0, brakesBonus: 0 });
+    }, { speedBonus: 0, accelerationBonus: 0, gripBonus: 0, suspensionBonus: 0, brakesBonus: 0, torqueBonus: 0, horsepowerBonus: 0, aeroBonus: 0 });
 }
 
 const generateVehiclestats = async (profile, vehicle) => {
@@ -358,14 +361,14 @@ const generateVehiclestats = async (profile, vehicle) => {
     if (!vehicle) return null;
     const upgradeBonuses = await calculateStatBonuses(vehicle);
 
-    const speedUpgrade = upgradeBonuses.speedBonus + profile.stats.speed; 
-    const accelUpgrade = upgradeBonuses.accelerationBonus + profile.stats.acceleration;
-    const gripUpgrade = upgradeBonuses.gripBonus + profile.stats.grip;
-    const suspensionUpgrade = upgradeBonuses.suspensionBonus + profile.stats.suspension;
-    const brakesUpgrade = upgradeBonuses.brakesBonus + profile.stats.brakes;
-    const torqueUpgrade = upgradeBonuses.torqueBonus + profile.stats.torque;
-    const horsepowerUpgrade = upgradeBonuses.horsepowerBonus + profile.stats.horsepower;
-    const aeroUpgrade = upgradeBonuses.aeroBonus + profile.stats.aerodynamics;
+    const speedUpgrade = upgradeBonuses.speedBonus;
+    const accelUpgrade = upgradeBonuses.accelerationBonus;
+    const gripUpgrade = upgradeBonuses.gripBonus;
+    const suspensionUpgrade = upgradeBonuses.suspensionBonus;
+    const brakesUpgrade = upgradeBonuses.brakesBonus;
+    const torqueUpgrade = upgradeBonuses.torqueBonus;
+    const horsepowerUpgrade = upgradeBonuses.horsepowerBonus;
+    const aeroUpgrade = upgradeBonuses.aeroBonus;
     
     const speedBonus = profile.stats.speed;
     const accelBonus = profile.stats.acceleration;
@@ -385,7 +388,7 @@ const generateVehiclestats = async (profile, vehicle) => {
     const horsepower = vehicle.stats.horsepower + horsepowerBonus;
     const aero = vehicle.stats.aerodynamics + aeroBonus;
 
-    const totalPower = (speed + acceleration + grip + suspension + brakes + aero) * ((torque + horsepower) || 1);
+    const totalPower = (speed + acceleration + grip + suspension + brakes + aero + torque + horsepower);
     const playerPower = totalPower * profile.level;
 
     const speedText = `Speed: ${vehicle.stats.speed} (+${speedBonus + speedUpgrade})`;

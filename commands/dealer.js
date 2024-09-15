@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 const { Profile, Vehicle } = require('../models');
 const { DateTime } = require('luxon');
 const { getLogger } = require('../utils/logging');
+const { getDealerEmbed } = require('../utils/getEmbed');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,127 +10,75 @@ module.exports = {
         .setDescription('View and buy cars for sale at the shop.'),
     category: 'Economy',
     async execute(interaction) {
-    let logger = await getLogger();
-    
+        let logger = await getLogger();
         const profile = await Profile.findOne({ userId: interaction.user.id });
         if (!profile) {
             await interaction.reply('No profile found.', { ephemeral: true });
             return;
         }
 
-        const forSaleCars = Vehicle.filter(v => v.level <= profile.level && v.forsale);
+        //const forSaleCars = await Vehicle.filter(v => v.level <= profile.level && v.forsale);
+        //const forSaleCars = await Vehicle.find({ forsale: true }).sort({ id: 1 }).lean();
         //const forSaleCars = Vehicles.filter(v => v.level <= profile.level && v.price <= profile.coins && v.forsale);
+        const forSaleCars = await Vehicle.find({ forSale: true }).sort({ id: 1 }).lean();
         if (forSaleCars.length === 0) {
             await interaction.reply('No cars available for sale that you can afford.');
             return;
         }
 
-        let pageIndex = 0;
-        const vehicleImage = new AttachmentBuilder(forSaleCars[pageIndex].image, { name: 'vehicle.png' });
-        let embed = new EmbedBuilder()
-            .setColor('#0099ff')
-            .setTitle(`${forSaleCars[pageIndex].year} ${forSaleCars[pageIndex].make} ${forSaleCars[pageIndex].model}`)
-            .setDescription(`You have <:coins:1269411594685644800> ${profile.coins.toLocaleString()}\nPrice: <:coins:1269411594685644800> ${forSaleCars[pageIndex].price.toLocaleString()}`)
-            .setImage('attachment://vehicle.png')
-            .addFields(
-                { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: false },
-                { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: false },
-                { name: 'Grip', value: `${forSaleCars[pageIndex].stats.grip}`, inline: false },
-                { name: 'Suspension', value: `${forSaleCars[pageIndex].stats.suspension}`, inline: false },
-                { name: 'Brakes', value: `${forSaleCars[pageIndex].stats.brakes}`, inline: false },
-                { name: 'Durability', value: `${forSaleCars[pageIndex].stats.durability}`, inline: false },
-                { name: 'Aerodynamics', value: `${forSaleCars[pageIndex].stats.aerodynamics}`, inline: false },
-                { name: 'Torque', value: `${forSaleCars[pageIndex].stats.torque}`, inline: false },
-                { name: 'Horsepower', value: `${forSaleCars[pageIndex].stats.horsepower}`, inline: false },
-                { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: false }
-            )
-            .setFooter({ text: `Page ${pageIndex + 1} of ${forSaleCars.length}` });
-            //logger.debug(`Speed: ${forSaleCars[pageIndex].stats.speed} | Acceleration: ${forSaleCars[pageIndex].stats.acceleration} | Handling: ${forSaleCars[pageIndex].stats.handling} | Fuel: ${forSaleCars[pageIndex].stats.fuelCapacity}`);
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('previous')
-                    .setLabel('Previous')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setDisabled(pageIndex === 0),
-                new ButtonBuilder()
-                    .setCustomId('next')
-                    .setLabel('Next')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setDisabled(forSaleCars.length === 1),
-                new ButtonBuilder()
-                    .setCustomId('buy')
-                    .setLabel('Buy')
-                    .setStyle(ButtonStyle.Success)
-            );
+        try {
+            let pageIndex = 0;
+            let e = await getDealerEmbed(interaction, forSaleCars, pageIndex);
 
-        await interaction.reply({ embeds: [embed], components: [row], files: [vehicleImage] });
+            const message = await interaction.reply({ embeds: [e.embed], components: [e.row], files: [e.vehicleImage], fetchReply: true });
+            const filter = i => ['previous', 'next', 'buy'].includes(i.customId) && i.user.id === interaction.user.id;
+            const collector = message.createMessageComponentCollector({ filter, time: 60000 });
 
-        const filter = i => ['previous', 'next', 'buy'].includes(i.customId) && i.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+            collector.on('collect', async i => {
+                await i.deferUpdate();
 
-        collector.on('collect', async i => {
-            await i.deferUpdate();
+                switch (i.customId) {
+                    case 'previous':
+                        pageIndex = Math.max(pageIndex - 1, 0);
+                        break;
+                    case 'next':
+                        pageIndex = Math.min(pageIndex + 1, forSaleCars.length - 1);
+                        break;
+                    case 'buy':
+                        const car = forSaleCars[pageIndex];
+                        if (profile.coins < car.price) {
+                            await interaction.editReply({ content: `You do not have enough Coins to buy the ${car.make} ${car.model}. You need $${(car.price - profile.coins).toLocaleString()} more.`, ephemeral: true });
+                            return;
+                        }
 
-            switch (i.customId) {
-                case 'previous':
-                    pageIndex = Math.max(pageIndex - 1, 0);
-                    break;
-                case 'next':
-                    pageIndex = Math.min(pageIndex + 1, forSaleCars.length - 1);
-                    break;
-                case 'buy':
-                    const car = forSaleCars[pageIndex];
-                    if (profile.coins < car.price) {
-                        await interaction.editReply({ content: `You do not have enough Coins to buy the ${car.make} ${car.model}. You need $${(car.price - profile.coins).toLocaleString()} more.`, ephemeral: true });
-                        return;
-                    }
+                        if (profile.vehicles.find(v => v.vehicleId === car._id)) {
+                            await interaction.editReply({ content: `You already own the ${car.make} ${car.model}.`, ephemeral: true });
+                            return;
+                        }
 
-                    if (profile.vehicles.find(v => v.vehicleId === car._id)) {
-                        await interaction.editReply({ content: `You already own the ${car.make} ${car.model}.`, ephemeral: true });
-                        return;
-                    }
+                        if (profile.vehicles.length >= 2) {
+                            await interaction.editReply({ content: `Your garage can only store 2 vehicles.`, ephemeral: true });
+                            return;
+                        }
+                    
+                        profile.coins -= car.price;
+                        profile.vehicles.push(car);
+                        await profile.save();
+                        await interaction.editReply({ content: `You have purchased the ${car.make} ${car.model}.`, embeds: [], components: [], files: [] });
+                        collector.stop();
+                        break;
+                }
 
-                    if (profile.vehicles.length >= 2) {
-                        await interaction.editReply({ content: `Your garage can only store 2 vehicles.`, ephemeral: true });
-                        return;
-                    }
-                
-                    profile.coins -= car.price;
-                    profile.vehicles.push(car);
-                    await profile.save();
-                    await interaction.editReply({ content: `You have purchased the ${car.make} ${car.model}.`, embeds: [], components: [] });
-                    collector.stop();
-                    break;
-            }
+                let e = await getDealerEmbed(interaction, forSaleCars, pageIndex);
+                await i.editReply({ embeds: [e.embed], components: [e.row], files: [e.vehicleImage], fetchReply: true });
+            });
 
-            embed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setTitle(`${forSaleCars[pageIndex].year} ${forSaleCars[pageIndex].make} ${forSaleCars[pageIndex].model}`)
-                .setDescription(`You have <:coins:1269411594685644800> ${profile.coins.toLocaleString()}\nPrice: <:coins:1269411594685644800> ${forSaleCars[pageIndex].price.toLocaleString()}`)
-                .setImage('attachment://vehicle.png')
-                .addFields(
-                    { name: 'Speed', value: `${forSaleCars[pageIndex].stats.speed}`, inline: false },
-                    { name: 'Acceleration', value: `${forSaleCars[pageIndex].stats.acceleration}`, inline: false },
-                    { name: 'Grip', value: `${forSaleCars[pageIndex].stats.grip}`, inline: false },
-                    { name: 'Suspension', value: `${forSaleCars[pageIndex].stats.suspension}`, inline: false },
-                    { name: 'Brakes', value: `${forSaleCars[pageIndex].stats.brakes}`, inline: false },
-                    { name: 'Durability', value: `${forSaleCars[pageIndex].stats.durability}`, inline: false },
-                    { name: 'Aerodynamics', value: `${forSaleCars[pageIndex].stats.aerodynamics}`, inline: false },
-                    { name: 'Torque', value: `${forSaleCars[pageIndex].stats.torque}`, inline: false },
-                    { name: 'Horsepower', value: `${forSaleCars[pageIndex].stats.horsepower}`, inline: false },
-                    { name: 'Fuel Capacity', value: `${forSaleCars[pageIndex].stats.fuelCapacity}`, inline: false }
-                )
-                .setFooter({ text: `Page ${pageIndex + 1} of ${forSaleCars.length}` });
-            
-            row.components[0].setDisabled(pageIndex === 0);
-            row.components[1].setDisabled(pageIndex === forSaleCars.length - 1);
-
-            await i.editReply({ embeds: [embed], components: [row] });
-        });
-
-        collector.on('end', () => {
-            interaction.editReply({ content: 'Dealer session has ended.', components: [] });
-        });
+            collector.on('end', () => {
+                interaction.editReply({ content: 'Dealer session has ended.', components: [] });
+            });
+        } catch (error) {
+            logger.error(interaction.user.tag + ' | dealer: ' + error);
+            interaction.reply('An error occurred while viewing the dealer.', { ephemeral: true });
+        }
     }
 };

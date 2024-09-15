@@ -21,9 +21,10 @@ async function startup () {
 
         const logger = await getLogger();
 
-        //await resetDailies(logger);
-        await updateProfileVehicleIds(logger);
+        await resetDailies(logger);
+        //await updateProfileVehicleIds(logger);
         //await updateAllPlayerVehicleStats(logger);
+        //await updateVehicleData(logger);
 
     } catch (err) {
         console.error('Database connection error:', err);
@@ -139,13 +140,12 @@ async function updateAllPlayerVehicleStats(logger) {
 async function updateProfileVehicleIds(logger) {
     try {
         const profiles = await Profile.find({});
-        const vehicles = await Vehicle.find(); // Fetch all vehicles
         logger.info(`Updating vehicle IDs for ${profiles.length} profiles...`);
         for (let profile of profiles) {
             if (!profile.vehicles || profile.vehicles.length === 0) {
                 profile.vehicles = [];
                 // Insert a starter vehicle for profiles missing a vehicle
-                const starterVehicle = vehicles.find(v => v.isStarterCar);
+                const starterVehicle = await Vehicle.findOne({ isStarterCar: true });
                 if (starterVehicle) {
                     profile.vehicles.push({
                         vehicleId: starterVehicle._id,
@@ -160,15 +160,18 @@ async function updateProfileVehicleIds(logger) {
                 }
             }
             for (let vehicleEntry of profile.vehicles) {
-                let vehicle = vehicles.findById(vehicleEntry.vehicleId);
+                let vehicle = await Vehicle.findById(vehicleEntry.vehicleId);
                 if (!vehicle) {
-                    vehicle = vehicles.find(v => v.year === vehicleEntry.year && v.make === vehicleEntry.make && v.model === vehicleEntry.model);
+                    vehicle = await Vehicle.find(v => v.year === vehicleEntry.year && v.make === vehicleEntry.make && v.model === vehicleEntry.model);
                     logger.debug(`Vehicle: ${vehicleEntry.year} ${vehicleEntry.make} ${vehicleEntry.model} | Vehicle ID: ${vehicle ? vehicle._id : 'Not found'}`);
                     if (vehicle) {
                         vehicleEntry.vehicleId = vehicle._id;
                         vehicleEntry.stats = vehicle.stats;
                         vehicleEntry.image = vehicle.image;
                     }
+                } else {
+                    vehicleEntry.stats = vehicle.stats;
+                    vehicleEntry.image = vehicle.image;
                 }
             }
 
@@ -184,9 +187,22 @@ async function updateProfileVehicleIds(logger) {
     logger.info('Vehicle IDs updated in profiles successfully!');
 }
 
+async function updateVehicleData(logger) {
+    try {
+        const vehicles = await Vehicle.find({});
+        for (let vehicle of vehicles) {
+            if (!vehicle.forSale) {
+                vehicle.forSale = true;
+            }
+            await vehicle.save();
+        }
+        logger.info('Vehicle data updated successfully');
+    } catch (error) {
+        logger.error('Error updating vehicle data:', error);
+    }
+}
+
 startup().catch(console.error);
-
-
 //for (const vehicle of vehicles) {
 //    const { _id, year, make, model } = vehicle;
 //    await Profile.updateMany(
