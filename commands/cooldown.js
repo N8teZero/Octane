@@ -91,6 +91,20 @@ function buildCooldownEmbed(profile, now) {
         ? `:no_entry: ${Math.ceil(timeRemaining).toLocaleString()} minutes`
         : ':white_check_mark:';
 
+    let supplyRunCooldown = '';
+    let runNumber = 1;
+    const supplyRuns = profile.supplyRuns.filter();
+    supplyRuns.forEach(async (run) => {
+        if (run.state === 'Ready to Collect') {
+            supplyRunCooldown += `:white_check_mark: [${runNumber}] Ready to Collect`;
+        } else if (run.state === 'In Progress') {
+            supplyRunCooldown += `:no_entry: [${runNumber}] ${DateTime.fromJSDate(run.endTime).diff(now).toFormat("hh 'hours', mm 'minutes")} remaining`;
+        } else {
+            supplyRunCooldown += `:white_check_mark: [${runNumber}] Available`;
+        }
+        runNumber++;
+    });
+
     return new EmbedBuilder()
         .setColor('#00ff00')
         .setTitle(`Your Cooldowns`)
@@ -101,7 +115,8 @@ function buildCooldownEmbed(profile, now) {
             { name: 'Lottery', value: `${lotteryCooldown}`, inline: false },
             { name: 'Daily', value: `${dailyResetString}`, inline: false },
             { name: 'Weekly', value: `${weeklyResetString}`, inline: false },
-            { name: 'Refuel', value: `${readyToRefuel}`, inline: false }                
+            { name: 'Refuel', value: `${readyToRefuel}`, inline: false },
+            { name: 'Supply Runs', value: `${supplyRunCooldown}`, inline: false }
         )
         .setFooter({ text: `Refreshed ${now.toLocaleString(DateTime.DATETIME_MED)}` });
 }
