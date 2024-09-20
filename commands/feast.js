@@ -56,7 +56,7 @@ module.exports = {
                     run.startTime = DateTime.now().setZone('America/New_York').toJSDate();
                     run.couponType = i.customId;
                     if (profile.supplyCouponT1 === 0 && i.customId === 't1') {
-                        return i.editReply({ content: 'You do not have any normal coupons.', ephemeral: true });
+                        return i.editReply({ content: 'You do not have any basic coupons.', ephemeral: true });
                     } else if (profile.supplyCouponT2 === 0 && i.customId === 't2') {
                         return i.editReply({ content: 'You do not have any premium coupons.', ephemeral: true });
                     }
@@ -139,7 +139,7 @@ async function generateEmbed(profile) {
     const embed = new EmbedBuilder()
         .setColor(0x00AE86)
         .setTitle(`Feast Supplies: ${profile.feastSupplies}`)
-        .setDescription(`**Coupons:**\nNormal: ${[profile.supplyCouponT1]}\nPremium: ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
+        .setDescription(`**Coupons:**\nBasic: ${[profile.supplyCouponT1]}\nPremium: ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
 
     now = DateTime.now().setZone('America/New_York').toJSDate()
     for (let i = 0; i < profile.supplyRuns.length; i++) {
@@ -148,7 +148,7 @@ async function generateEmbed(profile) {
         remainingTime = Math.floor(remainingTime);
 
         let runDescription = run.state;
-        let couponType = run.couponType === 't1' ? 'Regular' : run.couponType === 't2' ? 'Premium' : 'None';
+        let couponType = run.couponType === 't1' ? 'Basic' : run.couponType === 't2' ? 'Premium' : 'None';
         let couponReward = run.couponType === 't1' ? 1 : 5;
         if (run.state === 'In Progress' && remainingTime > 0) {            
             runDescription = `${couponReward}x Supplies\n${remainingTime} minutes remaining`;
@@ -181,7 +181,7 @@ async function generateEmbed(profile) {
     if (profile.supplyCouponT1 > 0) {
         const tier1Button = new ButtonBuilder()
             .setCustomId('t1')
-            .setLabel('Normal')
+            .setLabel('Basic')
             .setStyle(ButtonStyle.Primary)
             .setDisabled(!profile.supplyRuns.some(run => run.state === 'Available'));
         rows[0].addComponents(tier1Button);
