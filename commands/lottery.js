@@ -20,7 +20,13 @@ const prizes = [
     { emoji: '💡', description: 'XP', probability: 6, reward: { type: 'xp', value: 75 } },
     { emoji: '💡', description: 'XP', probability: 8, reward: { type: 'xp', value: 45 } },
     { emoji: '💡', description: 'XP', probability: 10, reward: { type: 'xp', value: 30 } },
-    { emoji: '💡', description: 'XP', probability: 12, reward: { type: 'xp', value: 15 } }
+    { emoji: '💡', description: 'XP', probability: 12, reward: { type: 'xp', value: 15 } },
+
+    { emoji: '', description: 'Premium Coupon', probability: 0.25, reward: { type: 'supplyCouponT2', value: 3 } },
+    { emoji: '', description: 'Premium Coupon', probability: 0.5, reward: { type: 'supplyCouponT2', value: 1 } },
+
+    { emoji: '', description: 'Basic Coupon', probability: 0.5, reward: { type: 'supplyCouponT1', value: 6 } },
+    { emoji: '', description: 'Basic Coupon', probability: 1, reward: { type: 'supplyCouponT1', value: 3 } }
 ];
 
 
