@@ -5,7 +5,7 @@ const { getLogger } = require('../utils/logging');
 
 const setCustomOptions = new SlashCommandBuilder()
     .setName('customize')
-    .setDescription('Customize your profile settings')
+    .setDescription('Customize your profile settings.')
     .addStringOption(option =>
         option.setName('username')
             .setDescription('Set a custom username for your profile (1-32 characters)')

@@ -7,10 +7,10 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
     .setName('profile')
-    .setDescription('View player profiles')
+    .setDescription('View player profiles.')
     .addUserOption(option =>
         option.setName('user')
-            .setDescription('The user whose profile you want to view')
+            .setDescription('The player you want to view')
             .setRequired(false)),
     category: 'General',
     async execute(interaction) {

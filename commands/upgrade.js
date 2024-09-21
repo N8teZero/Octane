@@ -6,7 +6,7 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('upgrade')
-        .setDescription('Upgrades your vehicle with an item from your inventory.')
+        .setDescription('Upgrades your vehicle with a usable part from your inventory.')
         .addStringOption(option => option.setName('item').setDescription('The item to install').setRequired(true)),
     category: 'General',    
     async execute(interaction) {

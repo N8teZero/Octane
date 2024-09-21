@@ -592,7 +592,7 @@ const partBonuses = {
         torque: 0.0,
         horsepower: 0.5,
         aero: 0.0
-    },
+    }
 }
 
 // Update player stats based on active blessings

@@ -6,7 +6,7 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('feast')
-        .setDescription('Open the Feast Menu to collect supplies for blessings'),
+        .setDescription('Open the Feast Menu to collect supplies for blessings.'),
     category: 'Rewards',
     async execute(interaction) {
     let logger = await getLogger();

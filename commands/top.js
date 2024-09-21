@@ -4,7 +4,7 @@ const { GuildSettings, Profile } = require('../models');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('top')
-        .setDescription('View top guilds')
+        .setDescription('View top guilds.')
         .addStringOption(option => 
             option.setName('metric')
                 .setDescription('Metric to rank guilds by')

@@ -6,10 +6,10 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
     .setName('stats')
-    .setDescription('View player stats')
+    .setDescription('View player stats.')
     .addUserOption(option =>
         option.setName('user')
-            .setDescription('The user whose profile you want to view')
+            .setDescription('The player you want to view')
             .setRequired(false)),
     category: 'General',
     async execute(interaction) {

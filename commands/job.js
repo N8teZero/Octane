@@ -6,7 +6,7 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('job')
-        .setDescription('Manage your job!')
+        .setDescription('Manage your job with various options!')
         .addSubcommand(subcommand =>
             subcommand
                 .setName('list')
