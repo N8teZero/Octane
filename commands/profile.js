@@ -49,7 +49,7 @@ module.exports = {
                 .addFields(
                 { name: 'Coins', value: `<:coins:1269411594685644800> ${cleanCoins.toLocaleString()}`, inline: true },
                 { name: 'Tokens', value: `<:lotterytoken:1269399775065804862> ${profile.luckyTokens.toLocaleString()}\n<:crewtoken:1269432351407083610> ${profile.crewTokens.toLocaleString()}\n<:junkyardpass:1273688549429870633> ${profile.junkyardPasses.toLocaleString()}`, inline: true },
-                { name: 'Feast', value: `<:feastSupplies:1286849566523654269> ${profile.feastSupplies}\n\nT1: ${profile.supplyCouponT1} | T2: ${profile.supplyCouponT2}`, inline: true },
+                { name: 'Feast', value: `<:feastSupplies:1286849566523654269> ${profile.feastSupplies}\n<:couponBasic:1286853815550742538> ${profile.supplyCouponT1}\n<:couponPremium:1286853816859365408> ${profile.supplyCouponT2}`, inline: true },
                 { name: 'Streetraces', value: `${profile.streetRaceStats.wins}W / ${profile.streetRaceStats.losses}L\n(${profile.streetRaceCount} Total)`, inline: true },
                 { name: 'Dailies Collected', value: `${profile.dailyCount}`, inline: true },
                 { name: 'Weeklies Collected', value: `${profile.weeklyCount}`, inline: true },

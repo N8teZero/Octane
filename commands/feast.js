@@ -139,7 +139,7 @@ async function generateEmbed(profile) {
     const embed = new EmbedBuilder()
         .setColor(0x00AE86)
         .setTitle(`Feast - Supply Runs`)
-        .setDescription(`<:feastSupplies:1286849566523654269> ${profile.feastSupplies}\n\n**Coupons:**\nBasic (1hr): ${[profile.supplyCouponT1]}\nPremium (1.5hr): ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
+        .setDescription(`<:feastSupplies:1286849566523654269> ${profile.feastSupplies}\n\n**Coupons:**\nBasic (1hr) - <:couponBasic:1286853815550742538> ${[profile.supplyCouponT1]}\nPremium (1.5hr) - <:couponPremium:1286853816859365408>  ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
 
     now = DateTime.now().setZone('America/New_York').toJSDate()
     for (let i = 0; i < profile.supplyRuns.length; i++) {
