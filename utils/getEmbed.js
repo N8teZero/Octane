@@ -10,7 +10,7 @@ async function getShrineEmbed(profile) {
     const embed = new EmbedBuilder()
         .setColor(0x00AE86)
         .setTitle(`Car Gods Shrine - Level ${shrineLvl}`)
-        .setDescription(`**Feast Supplies:** ${[profile.feastSupplies]}\n\nSpend 100 Feast Supplies to unlock a random blessing.`)
+        .setDescription(`<:feastSupplies:1286849566523654269> ${[profile.feastSupplies]}\n\nSpend 100 Feast Supplies to unlock a random blessing.`)
         .setFooter({text: 'Shrine XP: ' + profile.shrineXP});
 
     now = DateTime.now().setZone('America/New_York').toJSDate()

@@ -138,8 +138,8 @@ async function supplyRewards(couponType) {
 async function generateEmbed(profile) {
     const embed = new EmbedBuilder()
         .setColor(0x00AE86)
-        .setTitle(`Feast Supplies: ${profile.feastSupplies}`)
-        .setDescription(`**Coupons:**\nBasic: ${[profile.supplyCouponT1]}\nPremium: ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
+        .setTitle(`Feast - Supply Runs`)
+        .setDescription(`<:feastSupplies:1286849566523654269> ${profile.feastSupplies}\n\n**Coupons:**\nBasic (1hr): ${[profile.supplyCouponT1]}\nPremium (1.5hr): ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
 
     now = DateTime.now().setZone('America/New_York').toJSDate()
     for (let i = 0; i < profile.supplyRuns.length; i++) {
