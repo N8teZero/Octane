@@ -1,32 +1,12 @@
 # Octane
 An RPG street racing experience, within Discord. Buy and manage cars, race AI opponents, and more!
 
-## Commands
-Octane comes with many commands, including the following:
-
-
-### /start
-Starts your player account, and provides basic commands to get going.
-
-### /profile
-Check player stats for yourself or other active players.
-
-### /race
-Race against AI opponents to earn coins and XP.
-
-### /cooldowns
-See all of the ways to earn rewards and when the cooldowns reset.
-
-### /leaderboard
-Displays the current leaderboard with the top racers.
-
-### /help
-Provides information about the available commands.
-
+## Commands, Features, and more!
+[Visit the bot's wiki page for more info.](https://github.com/N8teZero/Octane/wiki)
 
 ## Links
-Top.gg - https://top.gg/bot/1261549898080452638
-Dev Server - https://discord.gg/yWEDMWd4AN
+- Top.gg - https://top.gg/bot/1261549898080452638
+- Dev Server - https://discord.gg/yWEDMWd4AN
 
 ## Patch Notes
 ## 2024-09-15 - 2.30.0
