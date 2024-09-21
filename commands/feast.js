@@ -6,7 +6,7 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('feast')
-        .setDescription('Open the Feast Menu to collect supplies for blessings'),
+        .setDescription('Open the Feast Menu to collect supplies for blessings.'),
     category: 'Rewards',
     async execute(interaction) {
     let logger = await getLogger();
@@ -138,8 +138,8 @@ async function supplyRewards(couponType) {
 async function generateEmbed(profile) {
     const embed = new EmbedBuilder()
         .setColor(0x00AE86)
-        .setTitle(`Feast Supplies: ${profile.feastSupplies}`)
-        .setDescription(`**Coupons:**\nBasic: ${[profile.supplyCouponT1]}\nPremium: ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
+        .setTitle(`Feast - Supply Runs`)
+        .setDescription(`<:feastSupplies:1286849566523654269> ${profile.feastSupplies}\n\n**Coupons:**\nBasic (1hr) - <:couponBasic:1286853815550742538> ${[profile.supplyCouponT1]}\nPremium (1.5hr) - <:couponPremium:1286853816859365408>  ${[profile.supplyCouponT2]}\n\n*Choose a coupon to start a supply run*\n`);
 
     now = DateTime.now().setZone('America/New_York').toJSDate()
     for (let i = 0; i < profile.supplyRuns.length; i++) {

@@ -6,10 +6,10 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
     .setName('stats')
-    .setDescription('View player stats')
+    .setDescription('View player stats.')
     .addUserOption(option =>
         option.setName('user')
-            .setDescription('The user whose profile you want to view')
+            .setDescription('The player you want to view')
             .setRequired(false)),
     category: 'General',
     async execute(interaction) {
@@ -34,6 +34,7 @@ module.exports = {
             const levelInfo = await calculateLevel(profile.xp);
             const playerPower = await calculatePlayerScore(profile);
             const vehicleStats = await generateVehiclestats(profile, playerVehicle);
+            const vehicleFuelRemaining = Math.floor((playerVehicle.stats.currentFuel / playerVehicle.stats.fuelCapacity) * 100);
             await updateChallenge(profile, 'checkStats');
             
             
@@ -49,7 +50,7 @@ module.exports = {
                     { name: 'Shrine', value: `Speed: ${vehicleStats.speedBonus}\nAccel: ${vehicleStats.accelBonus}\nGrip: ${vehicleStats.gripBonus}\nSuspension: ${vehicleStats.suspensionBonus}\nBrakes: ${vehicleStats.brakesBonus}\nTorque: ${vehicleStats.torqueBonus}\nHorsepower: ${vehicleStats.horsepowerBonus}\nAero: ${vehicleStats.aeroBonus}`, inline: false },
                 
                 )
-                .setFooter({ text: `XP: ${Math.floor(profile.xp)} / ${Math.floor(levelInfo.nextLevelXp)} | ${Math.floor(levelInfo.remainingXp)} to next level` });
+                .setFooter({ text: `Fuel: ${playerVehicle.stats.currentFuel} / ${playerVehicle.stats.fuelCapacity} | ${vehicleFuelRemaining} remaining` });
             
             interaction.reply({ embeds: [embed] });
         } catch (error) {

@@ -21,7 +21,9 @@ async function startup () {
 
         const logger = await getLogger();
 
-        await resetDailies(logger);
+        //await resetDailies(logger);
+
+        await updateProfileVehicleIds(logger);
         
         //await updateVehicleData(logger);
         //await updateAllPlayerVehicleStats(logger);
@@ -190,12 +192,14 @@ async function updateVehicleData(logger) {
     try {
         const vehicles = await Vehicle.find({});
         for (let vehicle of vehicles) {
-            if (!vehicle.stats) {
+            logger.info(`Updating vehicle fuel for ${vehicle.year} ${vehicle.make} from ${vehicle.stats.fuelCapacity} to 100`);
+            if (vehicle.stats) {
                 vehicle.stats.fuelCapacity = 100;
+                vehicle.stats.currentFuel = 100;
             }
             await vehicle.save();
         }
-        logger.info('Vehicle data updated successfully');
+        
     } catch (error) {
         logger.error('Error updating vehicle data:', error);
     }

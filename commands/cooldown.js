@@ -20,7 +20,7 @@ module.exports = {
         try {
             const now = DateTime.now().setZone('America/New_York');
             await resetLuckyTokens(profile);
-            const embed = buildCooldownEmbed(profile, now);
+            const embed = await buildCooldownEmbed(profile, now);
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -40,7 +40,7 @@ module.exports = {
                 if (i.customId === 'refresh_cooldowns') {
                     i.deferUpdate();
                     await new Promise(resolve => setTimeout(resolve, 30000)); // Disable for 30 seconds
-                    const newEmbed = buildCooldownEmbed(profile, DateTime.now().setZone('America/New_York'));
+                    const newEmbed = await buildCooldownEmbed(profile, DateTime.now().setZone('America/New_York'));
                     i.editReply({ embeds: [newEmbed], components: [row.setComponents(row.components[0].setDisabled(true))] });
                     setTimeout(async () => {
                         row.setComponents(row.components[0].setDisabled(false));
@@ -55,7 +55,8 @@ module.exports = {
     }
 };
 
-function buildCooldownEmbed(profile, now) {
+async function buildCooldownEmbed(profile, now) {
+    const logger = await getLogger();
     let lastDaily = profile.lastDaily ? DateTime.fromJSDate(profile.lastDaily) : now.minus({ days: 1 });
     let lastWeekly = profile.lastWeekly ? DateTime.fromJSDate(profile.lastWeekly) : now.minus({ weeks: 1 });
     
@@ -91,16 +92,41 @@ function buildCooldownEmbed(profile, now) {
         ? `:no_entry: ${Math.ceil(timeRemaining).toLocaleString()} minutes`
         : ':white_check_mark:';
 
+    try {
+        // Initialize supply runs if they are not already
+        if (!profile.supplyRuns || profile.supplyRuns.length === 0) {
+            profile.supplyRuns = [{
+                startTime: now,
+                endTime: now,
+                couponType: null,
+                state: 'Available'
+            }, {
+                startTime: now,
+                endTime: now,
+                couponType: null,
+                state: 'Available'
+            }, {
+                startTime: now,
+                endTime: now,
+                couponType: null,
+                state: 'Available'
+            }];
+            await profile.save();
+        }
+    } catch (error) {
+        logger.error('Error initializing supply runs for ' + profile.userId + ': ' + error);
+    }
+
     let supplyRunCooldown = '';
     let runNumber = 1;
-    const supplyRuns = profile.supplyRuns.filter();
+    const supplyRuns = profile.supplyRuns;
     supplyRuns.forEach(async (run) => {
         if (run.state === 'Ready to Collect') {
-            supplyRunCooldown += `:white_check_mark: [${runNumber}] Ready to Collect`;
+            supplyRunCooldown += `:white_check_mark: [${runNumber}] Ready to Collect\n`;
         } else if (run.state === 'In Progress') {
-            supplyRunCooldown += `:no_entry: [${runNumber}] ${DateTime.fromJSDate(run.endTime).diff(now).toFormat("hh 'hours', mm 'minutes")} remaining`;
+            supplyRunCooldown += `:no_entry: [${runNumber}] ${DateTime.fromJSDate(run.endTime).diff(now).toFormat("hh 'hours', mm 'minutes")} remaining\n`;
         } else {
-            supplyRunCooldown += `:white_check_mark: [${runNumber}] Available`;
+            supplyRunCooldown += `:white_check_mark: [${runNumber}] Available\n`;
         }
         runNumber++;
     });
@@ -108,14 +134,13 @@ function buildCooldownEmbed(profile, now) {
     return new EmbedBuilder()
         .setColor('#00ff00')
         .setTitle(`Your Cooldowns`)
+        .setDescription(`**AFK Rewards**\n${afkCooldown}\n\n**Daily**\n${dailyResetString}\n\n**Weekly**\n${weeklyResetString}`)
         .addFields(
-            { name: 'AFK Rewards', value: `${afkCooldown}`, inline: false },
+            { name: '\u200B', value: '\u200B' },
             { name: 'Work', value: `${workCooldown}`, inline: false },
             { name: 'Race', value: `${raceCooldown}`, inline: false },
-            { name: 'Lottery', value: `${lotteryCooldown}`, inline: false },
-            { name: 'Daily', value: `${dailyResetString}`, inline: false },
-            { name: 'Weekly', value: `${weeklyResetString}`, inline: false },
             { name: 'Refuel', value: `${readyToRefuel}`, inline: false },
+            { name: 'Lottery', value: `${lotteryCooldown}`, inline: false },
             { name: 'Supply Runs', value: `${supplyRunCooldown}`, inline: false }
         )
         .setFooter({ text: `Refreshed ${now.toLocaleString(DateTime.DATETIME_MED)}` });

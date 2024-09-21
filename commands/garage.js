@@ -6,7 +6,7 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('garage')
-        .setDescription('View your cars.'),
+        .setDescription('View your stored cars and their stats.'),
     async execute(interaction) {
     let logger = await getLogger();
         const profile = await Profile.findOne({ userId: interaction.user.id });

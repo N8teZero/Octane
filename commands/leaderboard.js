@@ -6,7 +6,7 @@ const { Profile } = require('../models');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('leaderboard')
-        .setDescription('View the leaderboard')
+        .setDescription('View the player leaderboard.')
         .addStringOption(option => 
             option.setName('sort')
                 .setDescription('Sort by XP, Coins, Level')

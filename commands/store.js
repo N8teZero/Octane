@@ -6,7 +6,7 @@ const { getLogger } = require('../utils/logging');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('store')
-        .setDescription('Displays available items in the store.'),
+        .setDescription('Displays available items in the store, purchase with /buy command.'),
     category: 'Economy',
     async execute(interaction) {
     let logger = await getLogger();
