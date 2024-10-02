@@ -93,7 +93,7 @@ async function giveXP(profile, guild, xp, client, source) {
     //log.info(`Level: ${preLevel} => ${postLevel}`);
     if (postLevel > preLevel) {
         logger.debug(`${profile.username} leveled up to ${postLevel}!!`);
-        const settings = await GuildSettings.findOne({ guildId: guild });
+        const settings = await GuildSettings.findOne({ guildId: guild }).lean();
         if (settings.levelupMessages && settings.levelupChannel !== '0' && settings.levelupChannel && client) {
             try {
                 const channel = client.channels.cache.get(settings.levelupChannel);
@@ -122,7 +122,7 @@ async function giveCoins(profile, coins, source) {
 
 async function giveItem(profile, item, quantity, source) {
     let logger = await getLogger();
-    const itemData = await Item.findOne({ itemId: item });
+    const itemData = await Item.findOne({ itemId: item }).lean();
     if (!itemData) return;
 
     if (itemData.itemId === 'junkyard_pass') {
@@ -143,33 +143,6 @@ async function giveItem(profile, item, quantity, source) {
     await profile.save();
 }
 
-const passiveRefuel = async (profile) => {
-    let logger = await getLogger();
-    const playerVehicle = profile.vehicles.find(v => v.isActive);
-    logger.debug(`Passive refuel for ${profile.username} | Vehicle: ${playerVehicle.make} ${playerVehicle.model}`);
-    if (playerVehicle.stats.currentFuel >= playerVehicle.stats.fuelCapacity) return profile;
-
-    const prof = await Profile.findOne({ userId: profile.userId, guildId: profile.guildId });
-    const lastRaceDate = prof.streetRaceStats.lastRaceDate ? DateTime.fromJSDate(prof.streetRaceStats.lastRaceDate) : null;
-    const now = DateTime.now().setZone('America/New_York');
-    const passiveStart = lastRaceDate ? lastRaceDate.plus({ minutes: 60 }).startOf('minute') : now; //   ||  .plus({ days: 1 }).startOf('day')
-    
-    if (now >= passiveStart) {
-        try {
-            const minutesPassed = now.diff(passiveStart, 'minutes').minutes;
-            const fuelToAdd = Math.floor(minutesPassed / 10); // 10 minutes per fuel
-            playerVehicle.stats.currentFuel += fuelToAdd;
-            if (playerVehicle.stats.currentFuel > playerVehicle.stats.fuelCapacity) playerVehicle.stats.currentFuel = playerVehicle.stats.fuelCapacity;
-            await prof.save();
-        } catch (err) {
-            logger.error(profile.userId+' | passiveRefuel: '+err);
-        }
-    }
-    return prof;
-};
-
-
-
 
 // Reward functions
 const rewardsTable = async (profile) => {
@@ -177,7 +150,7 @@ const rewardsTable = async (profile) => {
     try {
         const levelInfo = await calculateLevel(profile.xp);
         await updateBooster(profile);
-        const prof = await Profile.findOne({ userId: profile.userId, guildId: profile.guildId });
+        const prof = await Profile.findOne({ userId: profile.userId }).lean();
 
         const minXp = levelInfo.level * 2;
         const maxXp = levelInfo.level * 10;
@@ -201,11 +174,11 @@ const rewardsTable = async (profile) => {
 const calculatePassiveIncome = async (profile) => {
     let logger = await getLogger();
     await updateBooster(profile);
-    profile = await Profile.findOne({ userId: profile.userId });
+    profile = await Profile.findOne({ userId: profile.userId }).lean();
     const xpBooster = profile.booster.xp || 1.0;
     const moneyBooster = profile.booster.coins || 1.0;
     const now = DateTime.now().setZone('America/New_York');
-    const jobData = await Job.findById(profile.job);
+    const jobData = await Job.findById(profile.job).lean();
     const employee = jobData ? jobData.employees.find(e => e.userID === profile.userId) : null;
     const jobPay = employee ? employee.coinsPerMin : 0;
 
@@ -237,26 +210,6 @@ const updateBooster = async (profile) => {
     }
 };
 
-const resetStreetRaceTickets = async (profile) => {
-    let logger = await getLogger();
-    const prof = await Profile.findOne({ userId: profile.userId, guildId: profile.guildId });
-
-    const lastRaceDate = prof.streetRaceStats.lastRaceDate ? DateTime.fromJSDate(prof.streetRaceStats.lastRaceDate) : null;
-    const now = DateTime.now().setZone('America/New_York');
-    const nextRaceDate = lastRaceDate ? lastRaceDate.plus({ minutes: 20 }).startOf('minute') : now; //   ||  .plus({ days: 1 }).startOf('day')
-    
-    if (now >= nextRaceDate) {
-        try {
-            prof.streetRaceStats.streetRaceTickets = 3;
-            prof.streetRaceStats.lastRaceDate = now.toJSDate();
-            await prof.save();
-        } catch (err) {
-            logger.error(profile.userId+' | resetStreetRaceTickets: '+err);
-        }
-    }
-    return prof;
-};
-
 const resetLuckyTokens = async (profile) => {
     let logger = await getLogger();
     const prof = await Profile.findOne({ userId: profile.userId });
@@ -278,7 +231,7 @@ const resetLuckyTokens = async (profile) => {
 }
 
 const calculatePlayerScore = async (profile) => {
-    const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
+    const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive).lean());
     let playerScore = Math.floor(vehicleStats.playerPower);
 
     //console.log(`Player Score: ${playerScore} | ${vehicleStats.playerPower} | ${vehicleStats.totalPower}`);
@@ -628,7 +581,7 @@ async function updateStats(profile) {
 
 async function getItemDetails(item, quantity) {
     let logger = await getLogger();
-    const itemData = await Item.findOne({ itemId: item });
+    const itemData = await Item.findOne({ itemId: item }).lean();
     if (!itemData) return null;
 
 
@@ -649,7 +602,7 @@ async function getItemDetails(item, quantity) {
 
 async function itemPurchase(profile, item, quantity) {
     let logger = await getLogger();
-    const itemData = await Item.findOne({ itemId: item });
+    const itemData = await Item.findOne({ itemId: item }).lean();
     if (!itemData) return;
 
     if (profile.coins < itemData.value * quantity) {
@@ -694,8 +647,6 @@ async function itemPurchase(profile, item, quantity) {
 
 
 module.exports = {
-    // Fuel related functions
-    passiveRefuel,
     // Level related functions
     calculateLevel,
     calculateShrineLevel,
@@ -705,7 +656,6 @@ module.exports = {
     calculatePlayerScore,
     // Reward functions
     rewardsTable,
-    resetStreetRaceTickets,
     resetLuckyTokens,
     calculatePassiveIncome,
     updateBooster,
