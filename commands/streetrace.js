@@ -179,7 +179,7 @@ async function calculateRewards(profile, result, aiLevel, isNextLevel) {
     
         //logger.debug(`Player: ${profile.userId}, minCoins: ${minCoins}, maxCoins: ${maxCoins}, coinsEarned: ${coinsEarned}, xpEarned: ${xpEarned} for AI level ${aiLevel}`);
         await giveCoins(profile, coinsEarned, 'Race rewards');
-        await giveXP(profile, interaction.guildId, xpEarned, client, 'Race rewards');
+        await giveXP(profile, profile.guildId, xpEarned, client, 'Race rewards');
         if (Math.random() < 0.3) {
             await giveItem(profile, 'junkyard_pass', 1, 'Rare Race Reward');
             bonusMessage = '\nYou found a Junkyard Pass!';
