@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { Profile } = require('../models');
-const { generateVehiclestats } = require('../utils/main');
+const { generateVehiclestats, generateStatsText } = require('../utils/main');
 const { getLogger } = require('../utils/logging');
 
 module.exports = {
@@ -23,7 +23,8 @@ module.exports = {
 
         for (const vehicle of vehicles) {
             const vehicleStats = await generateVehiclestats(profile, vehicle);
-            const statsText = `${vehicleStats.speedText}\n${vehicleStats.accelText}\n${vehicleStats.gripText}\n${vehicleStats.suspensionText}\n${vehicleStats.brakesText}\n\n\n${vehicle.stats.currentFuel.toLocaleString()}% Fuel`;
+            const vehicleStatsText = await generateStatsText(vehicleStats);
+            const statsText = `${vehicleStatsText.speedText}\n${vehicleStatsText.accelText}\n${vehicleStatsText.gripText}\n${vehicleStatsText.suspensionText}\n${vehicleStatsText.brakesText}\n\n\n${vehicle.stats.currentFuel.toLocaleString()}% Fuel`;
             embed.addFields({
                 name: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
                 value: statsText,

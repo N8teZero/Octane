@@ -231,7 +231,7 @@ const resetLuckyTokens = async (profile) => {
 }
 
 const calculatePlayerScore = async (profile) => {
-    const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive).lean());
+    const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
     let playerScore = Math.floor(vehicleStats.playerPower);
 
     //console.log(`Player Score: ${playerScore} | ${vehicleStats.playerPower} | ${vehicleStats.totalPower}`);
@@ -344,27 +344,10 @@ const generateVehiclestats = async (profile, vehicle) => {
     const totalPower = (speed + acceleration + grip + suspension + brakes + aero + torque + horsepower);
     const playerPower = totalPower * profile.level;
 
-    const speedText = `Speed: ${vehicle.stats.speed} (+${speedBonus + speedUpgrade})`;
-    const accelText = `Accel: ${vehicle.stats.acceleration} (+${accelBonus + accelUpgrade})`;
-    const gripText = `Grip: ${vehicle.stats.grip} (+${gripBonus + gripUpgrade})`;
-    const suspensionText = `Suspension: ${vehicle.stats.suspension} (+${suspensionBonus + suspensionUpgrade})`;
-    const brakesText = `Brakes: ${vehicle.stats.brakes} (+${brakesBonus + brakesUpgrade})`;
-    const torqueText = `Torque: ${vehicle.stats.torque} (+${torqueBonus})`;
-    const horsepowerText = `Horsepower: ${vehicle.stats.horsepower} (+${horsepowerBonus})`;
-    const aeroText = `Aerodynamics: ${vehicle.stats.aerodynamics} (+${aeroBonus})`;
-
     logger.debug(`generateVehiclestats: ${vehicle.year} ${vehicle.make} ${vehicle.model} | Total Power: ${totalPower} | Speed: ${speed} | Accel: ${acceleration} | Grip: ${grip} | Suspension: ${suspension} | Brakes: ${brakes} | Torque: ${torque} | Horsepower: ${horsepower} | Aero: ${aero} | Player Power: ${playerPower}`);
 
     return {
         totalPower,
-        speedText,
-        accelText,
-        gripText,
-        suspensionText,
-        brakesText,
-        torqueText,
-        horsepowerText,
-        aeroText,
         speed,
         acceleration,
         grip,
@@ -391,6 +374,20 @@ const generateVehiclestats = async (profile, vehicle) => {
         aeroUpgrade,
         playerPower
     };
+}
+
+async function generateStatsText(vehicleStats) {
+    // Format the stats text for the vehicle, upgrades and bonuses rounded to 2nd decimal place
+    const speedText = `Speed: ${vehicleStats.speed.toFixed(1)} (+${(vehicleStats.speedBonus + vehicleStats.speedUpgrade).toFixed(1)})`;
+    const accelText = `Acceleration: ${vehicleStats.acceleration.toFixed(1)} (+${(vehicleStats.accelBonus + vehicleStats.accelUpgrade).toFixed(1)})`;
+    const gripText = `Grip: ${vehicleStats.grip.toFixed(1)} (+${(vehicleStats.gripBonus + vehicleStats.gripUpgrade).toFixed(1)})`;
+    const suspensionText = `Suspension: ${vehicleStats.suspension.toFixed(1)} (+${(vehicleStats.suspensionBonus + vehicleStats.suspensionUpgrade).toFixed(1)})`;
+    const brakesText = `Brakes: ${vehicleStats.brakes.toFixed(1)} (+${(vehicleStats.brakesBonus + vehicleStats.brakesUpgrade).toFixed(1)})`;
+    const torqueText = `Torque: ${vehicleStats.torque.toFixed(1)} (+${vehicleStats.torqueBonus.toFixed(1)})`;
+    const horsepowerText = `Horsepower: ${vehicleStats.horsepower.toFixed(1)} (+${vehicleStats.horsepowerBonus.toFixed(1)})`;
+    const aeroText = `Aerodynamics: ${vehicleStats.aero.toFixed(1)} (+${vehicleStats.aeroBonus.toFixed(1)})`;
+
+    return { speedText, accelText, gripText, suspensionText, brakesText, torqueText, horsepowerText, aeroText };
 }
 
 // partBonuses
@@ -664,6 +661,7 @@ module.exports = {
     calculateStatBonuses,
     partBonuses,
     generateVehiclestats,
+    generateStatsText,
     updateStats,
     // Item functions
     getItemDetails,

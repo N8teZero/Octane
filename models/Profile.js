@@ -145,6 +145,7 @@ const profileSchema = new mongoose.Schema({
     streetRaceCount: { type: Number, default: 0 },
     streetRaceStats: {
         highestLevelUnlocked: { type: Number, default: 1 },
+        highestBossWin: { type: Number, default: 0 },
         lastRaceDate: { type: Date, default: () => DateTime.now().setZone('America/New_York').minus({ days: 1 }).toJSDate() },
         wins: { type: Number, default: 0 },
         losses: { type: Number, default: 0 }

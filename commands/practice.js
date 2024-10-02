@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Profile } = require('../models');
-const { generateVehiclestats } = require('../utils/main');
+const { generateVehiclestats, generateStatsText } = require('../utils/main');
 const { getLogger } = require('../utils/logging');
 
 module.exports = {
@@ -41,6 +41,8 @@ module.exports = {
 
             const playerStats = await generateVehiclestats(profile, playerVehicle);
             const opponentStats = await generateVehiclestats(opponentProfile, opponentVehicle);
+            const playerStatsText = await generateStatsText(playerStats);
+            const opponentStatsText = await generateStatsText(opponentStats);
             
             const playerPower = playerStats.totalPower;
             const opponentPower = opponentStats.totalPower;
@@ -52,10 +54,10 @@ module.exports = {
                 .addFields(
                     { name: `${profile.username}`, value: `${playerVehicle.make} ${playerVehicle.model}`, inline: true },
                     { name: 'Power', value: `${playerPower}`, inline: true },
-                    { name: 'Stats', value: `${playerStats.speedText}\n${playerStats.accelText}\n${playerStats.handlingText}`, inline: true },
+                    { name: 'Stats', value: `${playerStatsText.speedText}\n${playerStatsText.accelText}\n${playerStatsText.handlingText}`, inline: true },
                     { name: `${opponentProfile.username}`, value: `${opponentVehicle.make} ${opponentVehicle.model}`, inline: true },
                     { name: 'Power', value: `${opponentPower}`, inline: true },
-                    { name: 'Stats', value: `${opponentStats.speedText}\n${opponentStats.accelText}\n${opponentStats.handlingText}`, inline: true },
+                    { name: 'Stats', value: `${opponentStatsText.speedText}\n${opponentStatsText.accelText}\n${opponentStatsText.handlingText}`, inline: true },
                     { name: '\u200B', value: '\u200B', inline: false },
                     { name: 'Result', value: result ? `${profile.username} won!` : `${opponentProfile.username} won!`, inline: false }
                 )
