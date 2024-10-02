@@ -43,7 +43,7 @@ module.exports = {
                 const result = await simulateRace(profile, aiVehicle);
 
                 let rewardsMessage = 'Well, you didn\'t lose your car at least.';
-                const rewards = await calculateRewards(profile, result, aiLevel, isNextLevel);
+                const rewards = await calculateRewards(profile, result, aiLevel, isNextLevel, interaction);
                 if (result) {
                     rewardsMessage = `${rewards.coinsEarned} <:coins:1269411594685644800>\n\n${rewards.xpEarned} XP${rewards.bonusMessage}`;
                 }
@@ -156,7 +156,7 @@ async function simulateRace(profile, opponent) {
     return result;   
 }
 
-async function calculateRewards(profile, result, aiLevel, isNextLevel) {
+async function calculateRewards(profile, result, aiLevel, isNextLevel, i) {
     let logger = await getLogger();
     await updateBooster(profile);
     let fuelCost = 25;
@@ -179,7 +179,7 @@ async function calculateRewards(profile, result, aiLevel, isNextLevel) {
     
         //logger.debug(`Player: ${profile.userId}, minCoins: ${minCoins}, maxCoins: ${maxCoins}, coinsEarned: ${coinsEarned}, xpEarned: ${xpEarned} for AI level ${aiLevel}`);
         await giveCoins(profile, coinsEarned, 'Race rewards');
-        await giveXP(profile, profile.guildId, xpEarned, client, 'Race rewards');
+        await giveXP(profile, i.guildId, xpEarned, i.client, 'Race rewards');
         if (Math.random() < 0.3) {
             await giveItem(profile, 'junkyard_pass', 1, 'Rare Race Reward');
             bonusMessage = '\nYou found a Junkyard Pass!';
