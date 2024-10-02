@@ -40,7 +40,7 @@ module.exports = {
             const aiVehicle = isNextLevel ? aiVehicleNext : aiVehicleCurrent;
             const aiLevel = isNextLevel ? level + 1 : level;
             try {
-                const result = await simulateRace(profile, aiVehicle);
+                const result = await simulateRace(profile, aiVehicle, aiLevel);
 
                 let rewardsMessage = 'Well, you didn\'t lose your car at least.';
                 const rewards = await calculateRewards(profile, result, aiLevel, isNextLevel, interaction);
@@ -140,14 +140,14 @@ const generateOpponent = async (profile, aiLevel) => {
     return aiVehicle;
 }
 
-async function simulateRace(profile, opponent) {
+async function simulateRace(profile, opponent, aiLevel) {
     let logger = await getLogger();
     const vehicleStats = await generateVehiclestats(profile, profile.vehicles.find(v => v.isActive));
     if (!opponent || !vehicleStats) {
         return false;
     }
     const aiVehicleStats = opponent.stats;
-    const aiTotal = aiVehicleStats.speed + aiVehicleStats.acceleration + aiVehicleStats.grip + aiVehicleStats.suspension + aiVehicleStats.brakes + aiVehicleStats.horsepower + aiVehicleStats.torque + aiVehicleStats.aerodynamics;
+    const aiTotal = (aiVehicleStats.speed + aiVehicleStats.acceleration + aiVehicleStats.grip + aiVehicleStats.suspension + aiVehicleStats.brakes + aiVehicleStats.horsepower + aiVehicleStats.torque + aiVehicleStats.aerodynamics) + aiLevel;
     const playerTotal = vehicleStats.playerPower;
 
     const result = playerTotal > aiTotal;
