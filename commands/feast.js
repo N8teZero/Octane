@@ -43,7 +43,7 @@ module.exports = {
 
             const message = await interaction.reply({ embeds: [e.embed], components: e.rows, fetchReply: true });
             const filter = i => i.user.id === interaction.user.id && (i.customId === 't1' || i.customId === 't2' || i.customId === 'collectSupplies');
-            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+            const collector = message.createMessageComponentCollector({ filter, time: 60000 });
 
             collector.on('collect', async i => {
                 if (i.customId === 't1' || i.customId === 't2') {

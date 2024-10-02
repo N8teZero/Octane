@@ -17,7 +17,7 @@ module.exports = {
 
         const starterCars = await Vehicle.find({ isStarterCar: true }).sort({ id: 1 }).lean();
         if (starterCars.length === 0) {
-            await interaction.reply('No starter vehicles found.', { ephemeral: true });
+            await interaction.reply({ content: 'No starter vehicles found.', ephemeral: true });
             return;
         }
 
@@ -85,7 +85,7 @@ module.exports = {
 
         } catch (error) {
             logger.error(interaction.user.tag+' | start: '+error);
-            interaction.reply('An error occurred while setting up your profile.', { ephemeral: true });
+            interaction.reply({ content: 'An error occurred while setting up your profile.', ephemeral: true });
         }
     }
 };

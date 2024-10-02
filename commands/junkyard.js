@@ -82,7 +82,7 @@ module.exports = {
         
     }
 };
-// "Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes", "Nitrous", "Weight Reduction", "Aero", "Engine", "Transmission"
+
 async function generateLoot(profile) {
     const parts = ["Turbo", "Supercharger", "Coilovers", "Suspension", "Exhaust", "Intake", "Intercooler", "Wheels", "Tires", "Brakes", "Nitrous", "Weight Reduction", "Aero", "Engine", "Transmission"];
     const conditions = ["Worn", "Broken", "Damaged", "Usable"];
